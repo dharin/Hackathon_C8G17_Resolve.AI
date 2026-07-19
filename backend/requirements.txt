@@ -7,4 +7,15 @@ pyjwt[crypto]>=2.9
 httpx>=0.27
 python-multipart>=0.0.12
 openai>=1.50  # OpenAI-compatible SDK, pointed at OpenRouter (see services/log_reader/llm_classifier.py)
+
+# --- RAG pipeline (see rag/) ---
+lancedb>=0.34
+pyarrow>=17.0
+fastembed>=0.4  # ONNX embeddings for BAAI/bge-small-en and nomic-embed-text, no torch/GPU needed
+tiktoken>=0.8  # token counting for chunk sizing, not tied to the embedding model
+pypdf>=5.0
+python-docx>=1.1
+beautifulsoup4>=4.12
+lxml>=5.3
+
 pytest>=8.3

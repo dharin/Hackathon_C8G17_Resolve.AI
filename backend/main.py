@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from api.analyze import router as analyze_router
 from api.me import router as me_router
+from api.rag import router as rag_router
 from api.upload import router as upload_router
 
 app = FastAPI(title="DevOps Incident Analysis Suite API")
@@ -19,6 +20,7 @@ app.add_middleware(
 app.include_router(me_router)
 app.include_router(upload_router)
 app.include_router(analyze_router)
+app.include_router(rag_router)
 
 
 @app.get("/health")
