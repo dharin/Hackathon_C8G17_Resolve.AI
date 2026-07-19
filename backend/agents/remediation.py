@@ -14,8 +14,8 @@ from rag.retriever import Retriever
 # services/log_reader/llm_classifier.py and agents/rca.py for the same
 # pattern).
 _OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
-_RETRIEVAL_LIMIT = 5
-_SNIPPET_MAX_CHARS = 240
+_RETRIEVAL_LIMIT = 3
+_SNIPPET_MAX_CHARS = 120
 
 _PRIORITY_BY_SEVERITY: dict[Severity, str] = {
     Severity.CRITICAL: "Highest",

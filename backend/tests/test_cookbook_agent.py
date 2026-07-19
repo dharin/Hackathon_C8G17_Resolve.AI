@@ -153,3 +153,19 @@ def test_duplicate_commands_across_sources_are_deduped():
     agent = CookbookAgent()
     cookbook = agent.build(make_incident(), make_rca(), recs)
     assert cookbook.commands == ["systemctl restart pgbouncer"]
+
+
+def test_duplicate_recommendation_titles_are_deduped_in_steps():
+    # Two chunks from the same source document commonly produce identical
+    # heuristic titles (see agents/remediation.py) — steps must not repeat
+    # the same instruction twice, and every title must stay unique so the
+    # UI can key each rendered step safely.
+    chunk_a = make_chunk(chunk_id="a", title="Database Runbook")
+    chunk_b = make_chunk(chunk_id="b", title="Database Runbook")
+    recs = [
+        make_recommendation(chunk_a, title='Follow guidance in "Database Runbook"'),
+        make_recommendation(chunk_b, title='Follow guidance in "Database Runbook"'),
+    ]
+    agent = CookbookAgent()
+    cookbook = agent.build(make_incident(), make_rca(), recs)
+    assert cookbook.steps == ['Follow guidance in "Database Runbook"']

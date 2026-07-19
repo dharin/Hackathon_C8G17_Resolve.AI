@@ -21,16 +21,20 @@ import { RcaPanel } from "@/components/rca-panel";
 import { RecommendationCard } from "@/components/recommendation-card";
 import { CookbookPanel } from "@/components/cookbook-panel";
 import { BottomActionPanel } from "@/components/bottom-action-panel";
-import type { IncidentDetail, LogIssue } from "@/types/analysis";
+import type { IncidentDetail, JiraTicketReference, LogIssue } from "@/types/analysis";
 
 export function IncidentDetails({
+  analysisId,
   incident,
   detail,
   loadingDetail,
+  onTicketCreated,
 }: {
+  analysisId: string;
   incident: LogIssue;
   detail: IncidentDetail | null;
   loadingDetail: boolean;
+  onTicketCreated: (ticket: JiraTicketReference) => void;
 }) {
   return (
     <div className="flex h-full flex-col rounded-2xl border border-border bg-card/50">
@@ -219,7 +223,14 @@ export function IncidentDetails({
       </Tabs>
 
       <div className="border-t border-border p-3">
-        <BottomActionPanel severity={incident.severity} />
+        <BottomActionPanel
+          severity={incident.severity}
+          analysisId={analysisId}
+          incidentId={incident.id}
+          jiraTicket={detail?.jira_ticket ?? null}
+          slackNotification={detail?.slack_notification ?? null}
+          onTicketCreated={onTicketCreated}
+        />
       </div>
     </div>
   );

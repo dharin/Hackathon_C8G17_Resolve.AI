@@ -9,6 +9,19 @@ import pytest
 # override=False — these pre-set values take precedence.
 os.environ["AUTH_PROVIDER"] = "mock"
 os.environ["OPENROUTER_API_KEY"] = ""
+# Blank real Jira credentials too — otherwise a CRITICAL-severity test
+# incident would trigger a real ticket creation against whatever live
+# Jira project is configured in the developer's .env (see
+# api/analyze.py::get_incident_detail's auto-create-for-critical path).
+os.environ["JIRA_URL"] = ""
+os.environ["JIRA_EMAIL"] = ""
+os.environ["JIRA_TOKEN"] = ""
+os.environ["JIRA_PROJECT_KEY"] = ""
+# Same reasoning for Slack — a CRITICAL incident with a (test-created)
+# Jira ticket would otherwise post a real message to whatever live channel
+# is configured (see services/slack_service.py's auto-notify path).
+os.environ["SLACK_BOT_TOKEN"] = ""
+os.environ["SLACK_CHANNEL_ID"] = ""
 
 
 class _EmptyRetriever:

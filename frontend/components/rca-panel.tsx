@@ -93,9 +93,9 @@ export function RcaPanel({
         </CardHeader>
         <CardContent>
           <ul className="flex flex-col gap-1.5">
-            {rca.evidence.map((item) => (
+            {rca.evidence.map((item, index) => (
               <li
-                key={item}
+                key={`${index}-${item}`}
                 className="rounded-lg bg-muted px-3 py-2 font-mono text-xs text-foreground/80"
               >
                 {item}
@@ -114,8 +114,8 @@ export function RcaPanel({
             <p className="text-sm text-muted-foreground">None identified.</p>
           ) : (
             <ul className="flex flex-col gap-3">
-              {rca.alternative_causes.map((alt) => (
-                <li key={alt.cause} className="flex flex-col gap-1">
+              {rca.alternative_causes.map((alt, index) => (
+                <li key={`${index}-${alt.cause}`} className="flex flex-col gap-1">
                   <div className="flex items-start justify-between gap-3">
                     <span className="text-sm text-foreground/80">
                       {alt.cause}

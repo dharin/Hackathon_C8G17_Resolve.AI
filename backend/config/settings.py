@@ -59,3 +59,30 @@ LANCEDB_PATH = Path(os.environ.get("LANCEDB_PATH", str(BACKEND_ROOT / "data" / "
 RAG_SYNC_STATE_DB_PATH = Path(
     os.environ.get("RAG_SYNC_STATE_DB_PATH", str(BACKEND_ROOT / "data" / "rag_sync_state.sqlite3"))
 )
+# Persists just the last-successful-sync timestamp shown on the RAG
+# Configuration tab's "Update Knowledgebase" button — distinct from
+# RAG_SYNC_STATE_DB_PATH, which tracks per-document incremental sync state.
+RAG_SYNC_META_DB_PATH = Path(
+    os.environ.get("RAG_SYNC_META_DB_PATH", str(BACKEND_ROOT / "data" / "rag_sync_meta.sqlite3"))
+)
+
+# --- Jira ---
+JIRA_URL = os.environ.get("JIRA_URL", "")
+JIRA_EMAIL = os.environ.get("JIRA_EMAIL", "")
+JIRA_TOKEN = os.environ.get("JIRA_TOKEN", "")
+JIRA_PROJECT_KEY = os.environ.get("JIRA_PROJECT_KEY", "")
+# "Task" exists on virtually every Jira project template by default;
+# JiraPayload's own `issue_type` ("Incident") is descriptive metadata, not
+# guaranteed to exist as a real issue type on an arbitrary project, so the
+# actual API call uses this configurable, safer default instead.
+JIRA_ISSUE_TYPE = os.environ.get("JIRA_ISSUE_TYPE", "Task")
+JIRA_TICKETS_DB_PATH = Path(
+    os.environ.get("JIRA_TICKETS_DB_PATH", str(BACKEND_ROOT / "data" / "jira_tickets.sqlite3"))
+)
+
+# --- Slack ---
+SLACK_BOT_TOKEN = os.environ.get("SLACK_BOT_TOKEN", "")
+SLACK_CHANNEL_ID = os.environ.get("SLACK_CHANNEL_ID", "")
+SLACK_NOTIFICATIONS_DB_PATH = Path(
+    os.environ.get("SLACK_NOTIFICATIONS_DB_PATH", str(BACKEND_ROOT / "data" / "slack_notifications.sqlite3"))
+)

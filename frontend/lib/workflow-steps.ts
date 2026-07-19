@@ -13,17 +13,21 @@ const STEP_DEFS: { id: WorkflowStep["id"]; label: string }[] = [
  * incident exists), rca/remediation/cookbook reflect the real fetch state
  * (an empty recommendations array still counts as "ran" — it's a
  * legitimate "no supporting documentation found" outcome, not "not run
- * yet"), and notification stays pending until Phase 11 exists.
+ * yet"), and notification is complete once a Jira ticket exists and/or a
+ * Slack notification was sent for this incident (see
+ * backend/api/analyze.py::get_incident_detail).
  */
 export function computeWorkflowSteps({
   hasRca,
   remediationRan,
   hasCookbook,
+  notified,
   loadingDetail,
 }: {
   hasRca: boolean;
   remediationRan: boolean;
   hasCookbook: boolean;
+  notified: boolean;
   loadingDetail: boolean;
 }): WorkflowStep[] {
   return STEP_DEFS.map((step, index): WorkflowStep => {
@@ -54,6 +58,9 @@ export function computeWorkflowSteps({
             : "pending",
       };
     }
-    return { ...step, status: "pending" };
+    return {
+      ...step,
+      status: notified ? "complete" : "pending",
+    };
   });
 }

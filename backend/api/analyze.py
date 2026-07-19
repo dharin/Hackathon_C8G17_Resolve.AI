@@ -9,8 +9,10 @@ from config.settings import UPLOAD_DIR
 from graph.orchestrator import get_detection_graph, get_incident_workflow_graph
 from models.incident_detail import IncidentDetail
 from models.log_issue import LogIssue
+from models.severity import Severity
 from models.upload_analysis import UploadAnalysisResult
 from models.user import UserIdentity
+from services import jira_service, jira_ticket_store, slack_notification_store, slack_service
 from services.analysis_store import load_analysis, save_analysis
 
 router = APIRouter(prefix="/api/v1", tags=["log-analysis"])
@@ -95,9 +97,34 @@ def get_incident_detail(
         )
 
     workflow_state = get_incident_workflow_graph().invoke({"selected_incident": incident})
+    jira_payload = workflow_state.get("jira_payload")
+
+    # Critical incidents get a Jira ticket automatically, without the user
+    # clicking anything (project-spec.md "Notifications" — "Critical
+    # only... Automatic"). Idempotent: repeated views of the same incident
+    # never create a second ticket (see services/jira_ticket_store.py).
+    # Non-critical incidents only ever get a ticket via the manual
+    # POST .../create-jira endpoint — this just reflects one if it exists.
+    if incident.severity == Severity.CRITICAL:
+        jira_ticket = jira_service.ensure_ticket(analysis_id, incident_id, jira_payload)
+        # Slack always fires after Jira, never before or independently
+        # (project-spec.md "Notifications") — `ensure_notification` itself
+        # also gates on severity/jira_ticket, this check just avoids the
+        # call entirely when there's nothing yet to notify about.
+        slack_notification = (
+            slack_service.ensure_notification(analysis_id, incident, jira_ticket)
+            if jira_ticket is not None
+            else None
+        )
+    else:
+        jira_ticket = jira_ticket_store.get_ticket(analysis_id, incident_id)
+        slack_notification = slack_notification_store.get_notification(analysis_id, incident_id)
+
     return IncidentDetail(
         incident=incident,
         rca=workflow_state.get("root_cause"),
         recommendations=workflow_state.get("recommendations"),
         cookbook=workflow_state.get("cookbook"),
+        jira_ticket=jira_ticket,
+        slack_notification=slack_notification,
     )

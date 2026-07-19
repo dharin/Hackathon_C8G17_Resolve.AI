@@ -82,6 +82,25 @@ export interface JiraPayload {
   labels: string[];
 }
 
+// Populated automatically for CRITICAL incidents, or after a manual
+// POST .../create-jira call for non-critical ones — see
+// backend/api/analyze.py::get_incident_detail and backend/api/jira.py.
+export interface JiraTicketReference {
+  key: string;
+  url: string;
+  created_at: string;
+}
+
+// Populated automatically, only for CRITICAL incidents, and only once
+// `jira_ticket` exists — never before or independently of it. See
+// backend/api/analyze.py::get_incident_detail and backend/api/slack.py.
+export interface SlackNotificationReference {
+  channel_id: string;
+  message_ts: string;
+  permalink: string | null;
+  sent_at: string;
+}
+
 // Every entry here is extracted verbatim from a recommendation's own
 // retrieved source content — never generated — see
 // backend/agents/cookbook.py.
@@ -98,4 +117,6 @@ export interface IncidentDetail {
   rca: RCAReport | null;
   recommendations: Recommendation[] | null;
   cookbook: Cookbook | null;
+  jira_ticket: JiraTicketReference | null;
+  slack_notification: SlackNotificationReference | null;
 }

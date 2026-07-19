@@ -60,6 +60,9 @@ class ChunkStore:
     def delete_document(self, document_id: str) -> None:
         self._table.delete(f"document_id = '{_escape(document_id)}'")
 
+    def count_rows(self) -> int:
+        return self._table.count_rows()
+
     def search(
         self,
         query_vector: list[float],

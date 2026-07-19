@@ -23,7 +23,7 @@ import {
   getAnalysisIncidents,
   getIncidentDetail,
 } from "@/services/analysis-service";
-import type { IncidentDetail, LogIssue } from "@/types/analysis";
+import type { IncidentDetail, JiraTicketReference, LogIssue } from "@/types/analysis";
 
 export function DashboardShell() {
   const analysisId = useSearchParams().get("analysis");
@@ -114,6 +114,10 @@ export function DashboardShell() {
 
   const retry = useCallback(() => setRetryCount((n) => n + 1), []);
 
+  const handleTicketCreated = useCallback((ticket: JiraTicketReference) => {
+    setDetail((prev) => (prev ? { ...prev, jira_ticket: ticket } : prev));
+  }, []);
+
   if (!analysisId) {
     return (
       <div className="flex flex-1 items-center justify-center p-4 sm:p-6">
@@ -179,6 +183,7 @@ export function DashboardShell() {
         hasRca: Boolean(detail?.rca),
         remediationRan: detail?.recommendations != null,
         hasCookbook: Boolean(detail?.cookbook),
+        notified: Boolean(detail?.jira_ticket) || Boolean(detail?.slack_notification),
         loadingDetail,
       })
     : null;
@@ -211,9 +216,11 @@ export function DashboardShell() {
             </Empty>
           ) : selectedIncident ? (
             <IncidentDetails
+              analysisId={analysisId}
               incident={selectedIncident}
               detail={detail}
               loadingDetail={loadingDetail}
+              onTicketCreated={handleTicketCreated}
             />
           ) : (
             <Empty className="h-full border border-dashed">

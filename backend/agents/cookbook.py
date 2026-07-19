@@ -30,7 +30,10 @@ class CookbookAgent:
         recommendations: list[Recommendation],
     ) -> Cookbook:
         root_cause = rca.primary_cause if rca else incident.title
-        steps = [rec.title for rec in recommendations]
+        # Deduped: multiple recommendations can share an identical heuristic
+        # title when several chunks from the same source document each
+        # became their own recommendation (see agents/remediation.py).
+        steps = _dedupe([rec.title for rec in recommendations])
 
         commands: list[str] = []
         validation: list[str] = []

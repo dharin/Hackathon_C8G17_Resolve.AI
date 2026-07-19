@@ -17,7 +17,7 @@ function StepList({ items, emptyLabel }: { items: string[]; emptyLabel: string }
   return (
     <ol className="flex flex-col gap-1.5">
       {items.map((item, index) => (
-        <li key={item} className="flex gap-2.5 text-sm text-foreground/90">
+        <li key={`${index}-${item}`} className="flex gap-2.5 text-sm text-foreground/90">
           <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-medium text-muted-foreground">
             {index + 1}
           </span>
@@ -99,9 +99,9 @@ export function CookbookPanel({
             </p>
           ) : (
             <div className="flex flex-col gap-1.5">
-              {cookbook.commands.map((command) => (
+              {cookbook.commands.map((command, index) => (
                 <pre
-                  key={command}
+                  key={`${index}-${command}`}
                   className="overflow-x-auto rounded-lg bg-muted px-3 py-2 font-mono text-xs text-foreground/80"
                 >
                   {command}

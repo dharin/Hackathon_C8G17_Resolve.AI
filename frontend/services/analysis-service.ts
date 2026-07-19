@@ -1,6 +1,7 @@
 import { API_BASE_URL } from "@/lib/upload-config";
 import type {
   IncidentDetail,
+  JiraTicketReference,
   LogIssue,
   UploadAnalysisResult,
 } from "@/types/analysis";
@@ -61,4 +62,19 @@ export function getIncidentDetail(
     `/api/v1/analyses/${analysisId}/incidents/${incidentId}`,
     token,
   );
+}
+
+export async function createJiraTicket(
+  analysisId: string,
+  incidentId: string,
+  token: string | null,
+): Promise<JiraTicketReference> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/analyses/${analysisId}/incidents/${incidentId}/create-jira`,
+    {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    },
+  );
+  return handleResponse<JiraTicketReference>(response);
 }
