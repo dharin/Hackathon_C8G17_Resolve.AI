@@ -1,18 +1,16 @@
-import { FileText, HardDrive, History, ExternalLink } from "lucide-react";
+import { FileText, FolderOpen, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { SourceReference, SourceType } from "@/types/incident";
 
 const SOURCE_ICON: Record<SourceType, typeof FileText> = {
   confluence: FileText,
-  "google-drive": HardDrive,
-  "historical-incident": History,
+  local_sop: FolderOpen,
 };
 
 const SOURCE_LABEL: Record<SourceType, string> = {
   confluence: "Confluence",
-  "google-drive": "Google Drive",
-  "historical-incident": "Historical Incident",
+  local_sop: "Local SOP",
 };
 
 export function SourceReferenceList({

@@ -1,13 +1,13 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { IncidentCard } from "@/components/incident-card";
-import type { Incident } from "@/types/incident";
+import type { LogIssue } from "@/types/analysis";
 
 export function IncidentList({
   incidents,
   selectedId,
   onSelect,
 }: {
-  incidents: Incident[];
+  incidents: LogIssue[];
   selectedId: string | null;
   onSelect: (id: string) => void;
 }) {

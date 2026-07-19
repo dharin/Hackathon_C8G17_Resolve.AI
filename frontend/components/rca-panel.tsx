@@ -13,7 +13,9 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import type { RCAReport } from "@/types/incident";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { RCAReport } from "@/types/analysis";
 
 function ConfidenceMeter({ value }: { value: number }) {
   return (
@@ -31,7 +33,27 @@ function ConfidenceMeter({ value }: { value: number }) {
   );
 }
 
-export function RcaPanel({ rca }: { rca: RCAReport | null }) {
+function RcaPanelSkeleton() {
+  return (
+    <div className="flex flex-col gap-5">
+      <Skeleton className="h-24 rounded-2xl" />
+      <Skeleton className="h-32 rounded-2xl" />
+      <Skeleton className="h-24 rounded-2xl" />
+    </div>
+  );
+}
+
+export function RcaPanel({
+  rca,
+  loading = false,
+}: {
+  rca: RCAReport | null;
+  loading?: boolean;
+}) {
+  if (loading) {
+    return <RcaPanelSkeleton />;
+  }
+
   if (!rca) {
     return (
       <Empty className="border border-dashed">
@@ -53,12 +75,15 @@ export function RcaPanel({ rca }: { rca: RCAReport | null }) {
       <Card>
         <CardHeader>
           <CardTitle>Primary Cause</CardTitle>
-          <CardAction>
+          <CardAction className="flex items-center gap-2">
+            <Badge variant="secondary" className="capitalize">
+              {rca.method}
+            </Badge>
             <ConfidenceMeter value={rca.confidence} />
           </CardAction>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-foreground/90">{rca.primaryCause}</p>
+          <p className="text-sm text-foreground/90">{rca.primary_cause}</p>
         </CardContent>
       </Card>
 
@@ -85,14 +110,20 @@ export function RcaPanel({ rca }: { rca: RCAReport | null }) {
           <CardTitle>Alternative Causes</CardTitle>
         </CardHeader>
         <CardContent>
-          {rca.alternativeCauses.length === 0 ? (
+          {rca.alternative_causes.length === 0 ? (
             <p className="text-sm text-muted-foreground">None identified.</p>
           ) : (
-            <ul className="flex flex-col gap-1.5 text-sm text-foreground/80">
-              {rca.alternativeCauses.map((item) => (
-                <li key={item} className="flex gap-2">
-                  <span className="text-muted-foreground">–</span>
-                  {item}
+            <ul className="flex flex-col gap-3">
+              {rca.alternative_causes.map((alt) => (
+                <li key={alt.cause} className="flex flex-col gap-1">
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="text-sm text-foreground/80">
+                      {alt.cause}
+                    </span>
+                    <span className="shrink-0 text-xs font-medium text-muted-foreground">
+                      {Math.round(alt.confidence * 100)}%
+                    </span>
+                  </div>
                 </li>
               ))}
             </ul>

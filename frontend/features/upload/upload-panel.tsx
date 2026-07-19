@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import {
   UploadCloud,
@@ -9,6 +10,7 @@ import {
   AlertCircle,
   X,
   RotateCcw,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -25,11 +27,13 @@ import {
   ALLOWED_LOG_EXTENSIONS,
 } from "@/lib/upload-config";
 import { uploadLogFile, UploadError } from "@/services/upload-service";
+import { analyzeLog, AnalysisError } from "@/services/analysis-service";
 import type { LogUploadResult } from "@/types/upload";
 
 type UploadState =
   | { status: "idle" }
   | { status: "uploading"; file: File; progress: number; abort: () => void }
+  | { status: "analyzing"; file: File; result: LogUploadResult }
   | { status: "success"; file: File; result: LogUploadResult }
   | { status: "error"; file: File | null; message: string };
 
@@ -48,11 +52,12 @@ function validateFile(file: File): string | null {
 
 export function UploadPanel() {
   const { getToken } = useAuth();
+  const router = useRouter();
   const [state, setState] = useState<UploadState>({ status: "idle" });
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const locked = state.status === "uploading";
+  const locked = state.status === "uploading" || state.status === "analyzing";
 
   const startUpload = useCallback(
     async (file: File) => {
@@ -71,16 +76,32 @@ export function UploadPanel() {
 
       setState({ status: "uploading", file, progress: 0, abort });
 
+      let result: LogUploadResult;
       try {
-        const result = await promise;
-        setState({ status: "success", file, result });
+        result = await promise;
       } catch (err) {
         const message =
           err instanceof UploadError ? err.message : "Upload failed.";
         setState({ status: "error", file, message });
+        return;
+      }
+
+      // Immediately run the Log Reader Agent against the uploaded file so
+      // the user lands straight on their incidents — mirrors the Upload ->
+      // Incidents step of the LangGraph pipeline (see backend/graph/).
+      setState({ status: "analyzing", file, result });
+      try {
+        const analysisToken = await getToken();
+        const analysis = await analyzeLog(result.upload_id, analysisToken);
+        router.push(`/?analysis=${analysis.analysis_id}`);
+        setState({ status: "success", file, result });
+      } catch (err) {
+        const message =
+          err instanceof AnalysisError ? err.message : "Analysis failed.";
+        setState({ status: "error", file, message });
       }
     },
-    [getToken],
+    [getToken, router],
   );
 
   const handleFiles = useCallback(
@@ -180,11 +201,23 @@ export function UploadPanel() {
         </div>
       )}
 
+      {state.status === "analyzing" && (
+        <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4">
+          <div className="flex min-w-0 items-center gap-2 text-sm">
+            <Loader2 className="size-4 shrink-0 animate-spin text-primary" />
+            <span className="truncate font-medium">{state.file.name}</span>
+            <span className="shrink-0 text-xs text-muted-foreground">
+              Detecting incidents…
+            </span>
+          </div>
+        </div>
+      )}
+
       {state.status === "success" && (
         <div className="flex flex-col gap-3">
           <Alert>
             <CheckCircle2 className="text-primary" />
-            <AlertTitle>Upload complete</AlertTitle>
+            <AlertTitle>Analysis complete</AlertTitle>
             <AlertDescription>
               <span className="truncate">
                 {state.result.file_name} ·{" "}

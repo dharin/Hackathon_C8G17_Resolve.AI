@@ -77,6 +77,52 @@ def test_incidents_unknown_analysis_id_returns_404(client: TestClient):
     assert response.status_code == 404
 
 
+def test_incident_detail_returns_the_matching_incident(client: TestClient):
+    upload_id = upload_sample(client, "mixed.log")
+    analyze_response = client.post(
+        f"/api/v1/logs/{upload_id}/analyze", headers=AUTH_HEADERS
+    )
+    analysis_id = analyze_response.json()["analysis_id"]
+    incident_id = analyze_response.json()["incidents"][0]["id"]
+
+    response = client.get(
+        f"/api/v1/analyses/{analysis_id}/incidents/{incident_id}",
+        headers=AUTH_HEADERS,
+    )
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["incident"]["id"] == incident_id
+    # RCA is populated as of Phase 7; recommendations/cookbook wait for
+    # Phases 8-9.
+    assert body["rca"] is not None
+    assert body["rca"]["incident_id"] == incident_id
+    assert body["rca"]["primary_cause"]
+    assert body["rca"]["evidence"]
+    assert body["recommendations"] is None
+    assert body["cookbook"] is None
+
+
+def test_incident_detail_unknown_analysis_id_returns_404(client: TestClient):
+    response = client.get(
+        "/api/v1/analyses/does-not-exist/incidents/whatever", headers=AUTH_HEADERS
+    )
+    assert response.status_code == 404
+
+
+def test_incident_detail_unknown_incident_id_returns_404(client: TestClient):
+    upload_id = upload_sample(client, "oom_kill.log")
+    analyze_response = client.post(
+        f"/api/v1/logs/{upload_id}/analyze", headers=AUTH_HEADERS
+    )
+    analysis_id = analyze_response.json()["analysis_id"]
+
+    response = client.get(
+        f"/api/v1/analyses/{analysis_id}/incidents/does-not-exist",
+        headers=AUTH_HEADERS,
+    )
+    assert response.status_code == 404
+
+
 def test_analyze_requires_auth(client: TestClient):
     upload_id = upload_sample(client, "oom_kill.log")
     response = client.post(f"/api/v1/logs/{upload_id}/analyze")

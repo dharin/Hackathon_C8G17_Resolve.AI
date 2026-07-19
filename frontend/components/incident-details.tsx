@@ -1,4 +1,4 @@
-import { FileSearch } from "lucide-react";
+import { BookX, Compass, FileSearch } from "lucide-react";
 import { formatFullTimestamp } from "@/lib/format-date";
 import {
   Tabs,
@@ -17,19 +17,18 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { SeverityBadge } from "@/components/severity-badge";
 import { RcaPanel } from "@/components/rca-panel";
-import { RecommendationCard } from "@/components/recommendation-card";
-import { CookbookPanel } from "@/components/cookbook-panel";
 import { BottomActionPanel } from "@/components/bottom-action-panel";
-import type { Incident } from "@/types/incident";
+import type { IncidentDetail, LogIssue } from "@/types/analysis";
 
-const LOG_LEVEL_STYLES: Record<string, string> = {
-  INFO: "text-muted-foreground",
-  WARN: "text-amber-600 dark:text-amber-400",
-  ERROR: "text-red-600 dark:text-red-400",
-  FATAL: "text-red-700 dark:text-red-300 font-semibold",
-};
-
-export function IncidentDetails({ incident }: { incident: Incident }) {
+export function IncidentDetails({
+  incident,
+  detail,
+  loadingDetail,
+}: {
+  incident: LogIssue;
+  detail: IncidentDetail | null;
+  loadingDetail: boolean;
+}) {
   return (
     <div className="flex h-full flex-col rounded-2xl border border-border bg-card/50">
       <div className="border-b border-border p-4">
@@ -37,8 +36,10 @@ export function IncidentDetails({ incident }: { incident: Incident }) {
           <div>
             <h2 className="text-base font-semibold">{incident.title}</h2>
             <p className="mt-1 text-xs text-muted-foreground">
-              {incident.metadata.incidentId} · {incident.service} ·{" "}
-              {formatFullTimestamp(incident.timestamp)}
+              {incident.id.slice(0, 8)} · {incident.service ?? "Unknown service"} ·{" "}
+              {incident.timestamp
+                ? formatFullTimestamp(incident.timestamp)
+                : "Unknown time"}
             </p>
           </div>
           <SeverityBadge severity={incident.severity} />
@@ -64,7 +65,11 @@ export function IncidentDetails({ incident }: { incident: Incident }) {
             <TabsContent value="overview" className="mt-0">
               <div className="rounded-2xl border border-border bg-card p-4">
                 <p className="text-sm text-foreground/90">
-                  {incident.overview}
+                  Detected via{" "}
+                  <span className="font-medium">
+                    {DETECTION_METHOD_LABEL[incident.detection_method]}
+                  </span>{" "}
+                  detection.
                 </p>
                 <dl className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
                   <div>
@@ -72,7 +77,7 @@ export function IncidentDetails({ incident }: { incident: Incident }) {
                       Category
                     </dt>
                     <dd className="font-medium capitalize">
-                      {incident.category}
+                      {incident.category.replaceAll("_", " ")}
                     </dd>
                   </div>
                   <div>
@@ -84,74 +89,79 @@ export function IncidentDetails({ incident }: { incident: Incident }) {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted-foreground">
-                      Environment
-                    </dt>
+                    <dt className="text-xs text-muted-foreground">Service</dt>
                     <dd className="font-medium">
-                      {incident.metadata.environment}
+                      {incident.service ?? "—"}
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs text-muted-foreground">Region</dt>
-                    <dd className="font-medium">{incident.metadata.region}</dd>
+                    <dt className="text-xs text-muted-foreground">
+                      Occurrences
+                    </dt>
+                    <dd className="font-medium">
+                      {typeof incident.fields.occurrences === "number"
+                        ? incident.fields.occurrences
+                        : 1}
+                    </dd>
                   </div>
                 </dl>
               </div>
             </TabsContent>
 
             <TabsContent value="rca" className="mt-0">
-              <RcaPanel rca={incident.rca} />
+              <RcaPanel rca={detail?.rca ?? null} loading={loadingDetail} />
             </TabsContent>
 
             <TabsContent value="recommendations" className="mt-0">
-              {incident.recommendations.length === 0 ? (
-                <Empty className="border border-dashed">
-                  <EmptyHeader>
-                    <EmptyMedia variant="icon">
-                      <FileSearch />
-                    </EmptyMedia>
-                    <EmptyTitle>No supporting documentation found</EmptyTitle>
-                    <EmptyDescription>
-                      No grounded remediation could be recommended for this
-                      incident.
-                    </EmptyDescription>
-                  </EmptyHeader>
-                </Empty>
-              ) : (
-                <div className="flex flex-col gap-3">
-                  {incident.recommendations.map((recommendation) => (
-                    <RecommendationCard
-                      key={recommendation.id}
-                      recommendation={recommendation}
-                    />
-                  ))}
-                </div>
-              )}
+              <Empty className="border border-dashed">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <FileSearch />
+                  </EmptyMedia>
+                  <EmptyTitle>Remediation not available yet</EmptyTitle>
+                  <EmptyDescription>
+                    The Remediation Agent (Phase 8) hasn&apos;t been
+                    implemented yet, so no recommendations exist for this
+                    incident.
+                  </EmptyDescription>
+                </EmptyHeader>
+              </Empty>
             </TabsContent>
 
             <TabsContent value="cookbook" className="mt-0">
-              <CookbookPanel cookbook={incident.cookbook} />
+              <Empty className="border border-dashed">
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <BookX />
+                  </EmptyMedia>
+                  <EmptyTitle>Cookbook not available yet</EmptyTitle>
+                  <EmptyDescription>
+                    The Cookbook Agent (Phase 9) hasn&apos;t been implemented
+                    yet, so no runbook exists for this incident.
+                  </EmptyDescription>
+                </EmptyHeader>
+              </Empty>
             </TabsContent>
 
             <TabsContent value="logs" className="mt-0">
-              <div className="flex flex-col gap-1 rounded-2xl border border-border bg-card p-4 font-mono text-xs">
-                {incident.logs.map((log, index) => (
-                  <div
-                    key={`${log.timestamp}-${index}`}
-                    className="flex gap-3"
-                  >
-                    <span className="shrink-0 text-muted-foreground">
-                      {log.timestamp}
-                    </span>
-                    <span
-                      className={`shrink-0 ${LOG_LEVEL_STYLES[log.level]}`}
-                    >
-                      {log.level}
-                    </span>
-                    <span className="text-foreground/80">{log.message}</span>
-                  </div>
-                ))}
-              </div>
+              {incident.raw_excerpt.length === 0 ? (
+                <Empty className="border border-dashed">
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <Compass />
+                    </EmptyMedia>
+                    <EmptyTitle>No log excerpt captured</EmptyTitle>
+                  </EmptyHeader>
+                </Empty>
+              ) : (
+                <div className="flex flex-col gap-1 rounded-2xl border border-border bg-card p-4 font-mono text-xs">
+                  {incident.raw_excerpt.map((line, index) => (
+                    <div key={index} className="text-foreground/80">
+                      {line}
+                    </div>
+                  ))}
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="metadata" className="mt-0">
@@ -161,8 +171,8 @@ export function IncidentDetails({ incident }: { incident: Incident }) {
                     <dt className="text-xs text-muted-foreground">
                       Incident ID
                     </dt>
-                    <dd className="font-medium">
-                      {incident.metadata.incidentId}
+                    <dd className="font-mono text-xs font-medium">
+                      {incident.id}
                     </dd>
                   </div>
                   <div>
@@ -170,25 +180,25 @@ export function IncidentDetails({ incident }: { incident: Incident }) {
                       Detected By
                     </dt>
                     <dd className="font-medium">
-                      {incident.metadata.detectedBy}
+                      {DETECTION_METHOD_LABEL[incident.detection_method]}
                     </dd>
                   </div>
-                  <div>
+                  <div className="sm:col-span-2">
                     <dt className="text-xs text-muted-foreground">
-                      Affected Hosts
+                      Extracted Fields
                     </dt>
-                    <dd className="font-medium">
-                      {incident.metadata.affectedHosts.join(", ")}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-xs text-muted-foreground">Tags</dt>
-                    <dd className="flex flex-wrap gap-1.5">
-                      {incident.metadata.tags.map((tag) => (
-                        <Badge key={tag} variant="secondary">
-                          {tag}
-                        </Badge>
-                      ))}
+                    <dd className="mt-1 flex flex-wrap gap-1.5">
+                      {Object.entries(incident.fields).length === 0 ? (
+                        <span className="text-sm text-muted-foreground">
+                          None extracted.
+                        </span>
+                      ) : (
+                        Object.entries(incident.fields).map(([key, value]) => (
+                          <Badge key={key} variant="secondary">
+                            {key}: {String(value)}
+                          </Badge>
+                        ))
+                      )}
                     </dd>
                   </div>
                 </dl>
@@ -199,8 +209,14 @@ export function IncidentDetails({ incident }: { incident: Incident }) {
       </Tabs>
 
       <div className="border-t border-border p-3">
-        <BottomActionPanel incident={incident} />
+        <BottomActionPanel severity={incident.severity} />
       </div>
     </div>
   );
 }
+
+const DETECTION_METHOD_LABEL: Record<LogIssue["detection_method"], string> = {
+  rule: "deterministic rule",
+  llm: "LLM classifier",
+  unclassified: "unclassified anomaly",
+};

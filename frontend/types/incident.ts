@@ -15,14 +15,10 @@ export interface WorkflowStep {
   status: WorkflowStepStatus;
 }
 
-export interface RCAReport {
-  primaryCause: string;
-  evidence: string[];
-  alternativeCauses: string[];
-  confidence: number;
-}
-
-export type SourceType = "confluence" | "google-drive" | "historical-incident";
+// Only Confluence and the local SOP directory are in scope for the RAG
+// pipeline (see project-spec.md "RAG Design" / Phase 6) — no Google Drive,
+// no historical-incident source.
+export type SourceType = "confluence" | "local_sop";
 
 export interface SourceReference {
   id: string;
@@ -33,6 +29,10 @@ export interface SourceReference {
   url: string;
 }
 
+// Recommendation/Cookbook are still placeholder shapes for the UI built
+// ahead of Phase 8/9 — no incident currently has real data for these, so
+// IncidentDetails always passes an empty array / null until those phases
+// introduce the real backend models.
 export interface Recommendation {
   id: string;
   title: string;
@@ -47,36 +47,4 @@ export interface Cookbook {
   commands: string[];
   validation: string[];
   rollback: string[];
-}
-
-export interface LogLine {
-  timestamp: string;
-  level: "INFO" | "WARN" | "ERROR" | "FATAL";
-  message: string;
-}
-
-export interface IncidentMetadata {
-  incidentId: string;
-  environment: string;
-  region: string;
-  affectedHosts: string[];
-  detectedBy: string;
-  tags: string[];
-}
-
-export interface Incident {
-  id: string;
-  title: string;
-  service: string;
-  timestamp: string;
-  severity: Severity;
-  category: string;
-  confidence: number;
-  overview: string;
-  rca: RCAReport | null;
-  recommendations: Recommendation[];
-  cookbook: Cookbook | null;
-  logs: LogLine[];
-  metadata: IncidentMetadata;
-  workflow: WorkflowStep[];
 }

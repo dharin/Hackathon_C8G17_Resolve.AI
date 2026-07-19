@@ -13,8 +13,8 @@ Produce an executable runbook from the root cause and remediation recommendation
 ## Implementation Tasks
 - `backend/agents/cookbook.py`: transform RCA + Recommendations into a structured runbook (commands, validation steps, rollback steps).
 - `backend/models/cookbook.py`: `Cookbook` Pydantic model.
-- Extend LangGraph: `Remediation` → `Cookbook` state transition.
-- Extend `GET /incidents/{id}` to include the cookbook.
+- In `backend/graph/orchestrator.py::get_incident_workflow_graph()`, add a `"cookbook"` node between `"remediation"` (added in Phase 8) and `END`. Update `IncidentWorkflowState.cookbook` in `graph/state.py` from `dict[str, Any] | None` to `Cookbook | None`.
+- In `models/incident_detail.py`, change `IncidentDetail.cookbook` from `dict[str, Any] | None` to `Cookbook | None`, and populate it in `api/analyze.py::get_incident_detail`. (Note: `GET /incidents/{id}` from the original project-spec.md contract was never implemented — Phase 5 shipped `GET /api/v1/analyses/{analysis_id}/incidents/{incident_id}` instead; see tasks/phase-07-rca-agent.md for the full history.)
 - Frontend: "Cookbook" tab rendering Root Cause, Recommended Steps, Commands, Validation, Rollback; "Create Jira Ticket" button shown only for non-critical incidents (disabled/no-op until Phase 10).
 
 ## Deliverables
@@ -26,6 +26,7 @@ Produce an executable runbook from the root cause and remediation recommendation
 
 ## Definition of Done
 - Cookbook tab renders complete runbook content for a selected incident.
+- `get_incident_workflow_graph()` has a real `"cookbook"` node completing the `START -> "rca" -> "remediation" -> "cookbook" -> END` chain, and `GET /api/v1/analyses/{analysis_id}/incidents/{incident_id}` returns a fully populated `IncidentDetail` (rca + recommendations + cookbook all non-null).
 
 ## Suggested Git Commit
 `feat: add cookbook analyzer`

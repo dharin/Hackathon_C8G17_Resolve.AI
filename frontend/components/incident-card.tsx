@@ -1,14 +1,14 @@
 import { cn } from "@/lib/utils";
 import { formatShortTimestamp } from "@/lib/format-date";
 import { SeverityBadge } from "@/components/severity-badge";
-import type { Incident } from "@/types/incident";
+import type { LogIssue } from "@/types/analysis";
 
 export function IncidentCard({
   incident,
   selected,
   onSelect,
 }: {
-  incident: Incident;
+  incident: LogIssue;
   selected: boolean;
   onSelect: () => void;
 }) {
@@ -30,10 +30,14 @@ export function IncidentCard({
       </div>
       <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
         <span className="font-medium text-foreground/70">
-          {incident.service}
+          {incident.service ?? "Unknown service"}
         </span>
         <span aria-hidden>·</span>
-        <span>{formatShortTimestamp(incident.timestamp)}</span>
+        <span>
+          {incident.timestamp
+            ? formatShortTimestamp(incident.timestamp)
+            : "Unknown time"}
+        </span>
       </div>
     </button>
   );
