@@ -51,6 +51,7 @@ export function TopHeader() {
               <Button
                 variant="outline"
                 size="sm"
+                nativeButton={false}
                 render={<Link href="/sign-in" />}
               >
                 Sign in

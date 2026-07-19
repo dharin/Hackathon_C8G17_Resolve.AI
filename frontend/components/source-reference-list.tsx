@@ -53,6 +53,7 @@ export function SourceReferenceList({
               variant="ghost"
               size="icon-xs"
               aria-label={`Open ${source.title}`}
+              nativeButton={false}
               render={
                 <a
                   href={source.url}
