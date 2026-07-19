@@ -73,6 +73,7 @@ chroma/
 *.gguf
 *.safetensors
 uploads/
+analyses/
 
 # --- OS files ---
 .DS_Store

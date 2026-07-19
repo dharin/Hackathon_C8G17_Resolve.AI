@@ -667,7 +667,7 @@ For these technologies, Claude Code must consult current official documentation 
 * Pydantic
 * LangGraph
 * LangChain
-* OpenAI API
+* OPENROUTER API
 * LanceDB
 * Clerk
 * Atlassian Confluence REST API

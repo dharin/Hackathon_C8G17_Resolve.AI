@@ -204,10 +204,10 @@ Manual Jira button
 
 ## AI
 
-Configurable
+Routed via OpenRouter (configurable model id)
 
-* GPT-4.1
-* GPT-5
+* openai/gpt-4.1
+* openai/gpt-5
 
 ## Embedding
 
@@ -866,7 +866,9 @@ HTTPS ready
 # Environment Variables
 
 ```
-OPENAI_API_KEY
+OPENROUTER_API_KEY
+
+OPENROUTER_MODEL
 
 CLERK_SECRET_KEY
 

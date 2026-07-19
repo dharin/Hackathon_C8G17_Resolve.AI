@@ -88,12 +88,30 @@ Log upload (same auth requirement):
 curl -H "Authorization: Bearer <token>" -F "file=@/path/to/app.log" http://localhost:8000/api/v1/logs/upload
 ```
 
+Analyze an uploaded log and fetch its incidents:
+
+```
+curl -X POST -H "Authorization: Bearer <token>" http://localhost:8000/api/v1/logs/<upload_id>/analyze
+curl -H "Authorization: Bearer <token>" http://localhost:8000/api/v1/analyses/<analysis_id>/incidents
+```
+
+## Running Backend Tests
+
+```
+cd backend
+source .venv/bin/activate
+pytest
+```
+
+Fully offline and deterministic — `backend/tests/conftest.py` forces `AUTH_PROVIDER=mock` and blanks `OPENROUTER_API_KEY` regardless of your local `.env`, so no real Clerk or OpenRouter credentials are used.
+
 ## Current Status
 
-Phases 1–4 complete:
+Phases 1–5 complete:
 - **Phase 1** — project bootstrap (Next.js + FastAPI scaffolds).
 - **Phase 2** — Clerk-backed sign-in/sign-out and route protection on the frontend; a mockable auth-provider abstraction and authenticated `/api/v1/me` on the backend.
 - **Phase 3** — dashboard shell (sidebar, top header, workflow stepper, incident list/details, all 12 components) with mock incident data.
 - **Phase 4** — log upload: drag-and-drop/browse UI at `/upload-logs` with client-side validation, progress, and duplicate-submission prevention, backed by `POST /api/v1/logs/upload` (validated, safely stored under `backend/uploads/`, git-ignored).
+- **Phase 5** — Log Reader Agent: deterministic (regex-first, LLM-fallback) detection across 7 incident categories, `POST /api/v1/logs/{upload_id}/analyze` + `GET /api/v1/analyses/{analysis_id}/incidents`, 14 passing tests. Not yet wired into the frontend dashboard (still showing mock data) or a LangGraph orchestrator — both deferred to later phases.
 
 See [tasks/](tasks/) for the phase-by-phase plan and what's next.
