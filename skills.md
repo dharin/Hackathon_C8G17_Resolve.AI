@@ -140,10 +140,12 @@ Before marking any phase complete, Claude must report:
 
 Install these before implementing the frontend bootstrap and dashboard.
 
-## 3.1 Next.js Best Practices
+## 3.1 Next.js App Router Patterns
+
+Replaces the retired `vercel-labs/next-skills` `next-best-practices` skill (that repo no longer ships installable skills). Use this high-adoption App Router skill instead:
 
 ```bash
-npx skills add https://github.com/vercel-labs/next-skills --skill next-best-practices
+npx skills add https://github.com/wshobson/agents --skill nextjs-app-router-patterns
 ```
 
 **Use for**
@@ -151,9 +153,10 @@ npx skills add https://github.com/vercel-labs/next-skills --skill next-best-prac
 * Next.js App Router
 * Server and Client Component boundaries
 * Route organization
-* Environment-variable handling
+* Streaming and Suspense
+* Server Actions and Route Handlers
 * Error and loading boundaries
-* Data-fetching conventions
+* Data-fetching and caching conventions
 * Metadata
 * Performance-conscious application structure
 
@@ -288,6 +291,53 @@ npx skills add https://github.com/vercel-labs/agent-skills --skill web-design-gu
 * Error messages must explain corrective actions.
 * Buttons must use descriptive labels.
 * Tabs must support accessible keyboard navigation.
+
+---
+
+## 3.6 Taste Skills
+
+Anti-generic frontend design guidance from [Leonxlnx/taste-skill](https://github.com/Leonxlnx/taste-skill).
+
+Install the default taste skill plus the restrained product-UI skill that fits this enterprise dashboard:
+
+```bash
+npx skills add https://github.com/Leonxlnx/taste-skill --skill design-taste-frontend
+npx skills add https://github.com/Leonxlnx/taste-skill --skill minimalist-ui
+```
+
+**Use for**
+
+* Avoiding templated "AI slop" layouts
+* Typography, spacing, hierarchy, and motion decisions
+* Restrained product UI closer to Linear/Notion for the incident dashboard
+* Pre-flight visual review before declaring UI work complete
+* Redesigning screens while preserving approved product rules
+
+**Which skill when**
+
+* `design-taste-frontend` — general anti-slop taste rules; stronger for marketing/landing surfaces
+* `minimalist-ui` — prefer this for dashboard, tables, steppers, and multi-step product UI
+
+**Project-specific rules**
+
+* Still follow the approved design language: dark sidebar, light workspace, purple accent, rounded cards, minimal enterprise look.
+* Prefer restrained product UI over experimental or brutalist directions.
+* Do not override severity colors, source links, workflow stepper behavior, or other rules in `project-spec.md`.
+* Pair with `frontend-design` and `web-design-guidelines`; Taste Skills guide aesthetics, those skills guide structure and accessibility.
+
+**Optional related skills from the same package**
+
+Install only when needed:
+
+```bash
+npx skills add https://github.com/Leonxlnx/taste-skill --skill redesign-existing-projects
+npx skills add https://github.com/Leonxlnx/taste-skill --skill full-output-enforcement
+```
+
+* `redesign-existing-projects` — audit-first UI redesigns
+* `full-output-enforcement` — reduce incomplete UI output and placeholders
+
+Do not install conflicting directional skills (`industrial-brutalist-ui`, `high-end-visual-design`) unless the approved design language changes.
 
 ---
 
@@ -516,11 +566,13 @@ find-skills
 writing-plans
 executing-plans
 verification-before-completion
-next-best-practices
+nextjs-app-router-patterns
 vercel-react-best-practices
 shadcn
 frontend-design
 web-design-guidelines
+design-taste-frontend
+minimalist-ui
 ```
 
 ## Before Phase 5 — Log Reader Agent
@@ -562,7 +614,7 @@ npx skills add https://github.com/obra/superpowers --skill executing-plans
 
 npx skills add https://github.com/obra/superpowers --skill verification-before-completion
 
-npx skills add https://github.com/vercel-labs/next-skills --skill next-best-practices
+npx skills add https://github.com/wshobson/agents --skill nextjs-app-router-patterns
 
 npx skills add https://github.com/vercel-labs/agent-skills --skill vercel-react-best-practices
 
@@ -571,6 +623,10 @@ npx skills add https://github.com/shadcn/ui --skill shadcn
 npx skills add https://github.com/anthropics/skills --skill frontend-design
 
 npx skills add https://github.com/vercel-labs/agent-skills --skill web-design-guidelines
+
+npx skills add https://github.com/Leonxlnx/taste-skill --skill design-taste-frontend
+
+npx skills add https://github.com/Leonxlnx/taste-skill --skill minimalist-ui
 ```
 
 ---
@@ -643,9 +699,9 @@ The repository specification and official documentation take precedence.
 | Phase                   | Primary Skills                                               |
 | ----------------------- | ------------------------------------------------------------ |
 | Repository Setup        | Writing Plans, Executing Plans                               |
-| Phase 1: Bootstrap      | Next.js Best Practices, React Best Practices                 |
-| Phase 2: Authentication | Next.js Best Practices, Systematic Debugging                 |
-| Phase 3: Dashboard UI   | shadcn/ui, Frontend Design, Web Design Guidelines            |
+| Phase 1: Bootstrap      | Next.js App Router Patterns, React Best Practices            |
+| Phase 2: Authentication | Next.js App Router Patterns, Systematic Debugging            |
+| Phase 3: Dashboard UI   | shadcn/ui, Frontend Design, Web Design Guidelines, Taste Skills |
 | Phase 4: Log Upload     | React Best Practices, Test-Driven Development                |
 | Phase 5: Log Reader     | Test-Driven Development, Systematic Debugging                |
 | Phase 6: RAG Pipeline   | Writing Plans, Test-Driven Development, Systematic Debugging |

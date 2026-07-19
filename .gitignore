@@ -1,0 +1,68 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+venv/
+.venv/
+env/
+__pycache__/
+*.pyc
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+credentials.json
+secrets.json
+
+# Build output
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Agent / LLM run artifacts
+.claude/settings.local.json
+.agents/**/cache/
+.agents/**/tmp/
+*.session.json
+*.trace.json
+transcripts/
+runs/
+checkpoints/
+
+# Vector stores / embeddings / model caches
+*.faiss
+*.index
+chroma/
+.chroma/
+.cache/
+.model_cache/
+*.gguf
+*.safetensors
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Testing / coverage
+coverage/
+.nyc_output/
+
+# Misc
+*.tmp
+*.bak
