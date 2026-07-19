@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from config.settings import ANALYSES_DIR, UPLOAD_DIR
+from config.settings import ANALYSES_DB_PATH, UPLOAD_DIR
 from main import app
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures" / "sample_logs"
@@ -13,18 +13,19 @@ AUTH_HEADERS = {"Authorization": "Bearer test-token"}
 @pytest.fixture
 def client():
     created_uploads_before = set(UPLOAD_DIR.iterdir())
-    created_analyses_before = set(ANALYSES_DIR.iterdir())
+    # Analyses now live in a single SQLite file (see services/analysis_store.py)
+    # rather than one file per analysis, so it's simplest to reset it
+    # entirely around each test rather than diff its contents.
+    ANALYSES_DB_PATH.unlink(missing_ok=True)
 
     with TestClient(app) as test_client:
         yield test_client
 
     # Clean up whatever this test run wrote to the (real, git-ignored)
-    # uploads/analyses directories, so repeated local test runs don't
-    # accumulate files.
+    # uploads directory, so repeated local test runs don't accumulate files.
     for path in set(UPLOAD_DIR.iterdir()) - created_uploads_before:
         path.unlink(missing_ok=True)
-    for path in set(ANALYSES_DIR.iterdir()) - created_analyses_before:
-        path.unlink(missing_ok=True)
+    ANALYSES_DB_PATH.unlink(missing_ok=True)
 
 
 def upload_sample(client: TestClient, filename: str) -> str:
@@ -92,14 +93,19 @@ def test_incident_detail_returns_the_matching_incident(client: TestClient):
     assert response.status_code == 200, response.text
     body = response.json()
     assert body["incident"]["id"] == incident_id
-    # RCA is populated as of Phase 7; recommendations/cookbook wait for
-    # Phases 8-9.
+    # RCA (Phase 7), recommendations (Phase 8), and cookbook (Phase 9) are
+    # all populated now. Recommendations/commands are empty because the
+    # test suite stubs retrieval to return no chunks (see conftest.py) —
+    # a real, legitimate "no supporting documentation found" state, not a
+    # missing feature.
     assert body["rca"] is not None
     assert body["rca"]["incident_id"] == incident_id
     assert body["rca"]["primary_cause"]
     assert body["rca"]["evidence"]
-    assert body["recommendations"] is None
-    assert body["cookbook"] is None
+    assert body["recommendations"] == []
+    assert body["cookbook"] is not None
+    assert body["cookbook"]["root_cause"] == body["rca"]["primary_cause"]
+    assert body["cookbook"]["commands"] == []
 
 
 def test_incident_detail_unknown_analysis_id_returns_404(client: TestClient):

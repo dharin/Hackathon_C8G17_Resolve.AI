@@ -5,10 +5,12 @@ import type { LogIssue } from "@/types/analysis";
 export function IncidentList({
   incidents,
   selectedId,
+  analyzingId,
   onSelect,
 }: {
   incidents: LogIssue[];
   selectedId: string | null;
+  analyzingId?: string | null;
   onSelect: (id: string) => void;
 }) {
   return (
@@ -26,6 +28,7 @@ export function IncidentList({
               key={incident.id}
               incident={incident}
               selected={incident.id === selectedId}
+              analyzing={incident.id === analyzingId}
               onSelect={() => onSelect(incident.id)}
             />
           ))}

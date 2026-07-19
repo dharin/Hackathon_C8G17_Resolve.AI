@@ -2,7 +2,7 @@
 // over the wire) — no mapping layer, so drift between frontend and backend
 // is a type error, not a silent bug.
 
-import type { Severity } from "@/types/incident";
+import type { Severity, SourceType } from "@/types/incident";
 
 export type IssueCategory =
   | "oom_kill"
@@ -52,11 +52,50 @@ export interface RCAReport {
   method: "llm" | "heuristic";
 }
 
-// `recommendations`/`cookbook` stay untyped placeholders until Phase 8/9
-// introduce their real models — see backend/models/incident_detail.py.
+// A ranked, source-attributed retrieval result — mirrors
+// backend/rag/models.py::RetrievedChunk exactly.
+export interface RetrievedChunk {
+  chunk_id: string;
+  content: string;
+  score: number;
+  source_type: SourceType;
+  title: string;
+  source_uri: string;
+  section_path: string[];
+  updated_at: string | null;
+  metadata: Record<string, unknown>;
+}
+
+export interface Recommendation {
+  title: string;
+  confidence: number;
+  rationale: string;
+  sources: RetrievedChunk[];
+}
+
+export interface JiraPayload {
+  incident_id: string;
+  summary: string;
+  description: string;
+  priority: string;
+  issue_type: string;
+  labels: string[];
+}
+
+// Every entry here is extracted verbatim from a recommendation's own
+// retrieved source content — never generated — see
+// backend/agents/cookbook.py.
+export interface Cookbook {
+  root_cause: string;
+  steps: string[];
+  commands: string[];
+  validation: string[];
+  rollback: string[];
+}
+
 export interface IncidentDetail {
   incident: LogIssue;
   rca: RCAReport | null;
-  recommendations: unknown[] | null;
-  cookbook: unknown | null;
+  recommendations: Recommendation[] | null;
+  cookbook: Cookbook | null;
 }

@@ -1,7 +1,10 @@
-from typing import Any, TypedDict
+from typing import TypedDict
 
+from models.cookbook import Cookbook
+from models.jira_payload import JiraPayload
 from models.log_issue import LogIssue
 from models.rca_report import RCAReport
+from models.recommendation import Recommendation
 
 
 class DetectionState(TypedDict, total=False):
@@ -16,15 +19,10 @@ class DetectionState(TypedDict, total=False):
 class IncidentWorkflowState(TypedDict, total=False):
     """State for the Selected Incident -> RCA -> Remediation -> Cookbook ->
     Notification portion of the pipeline. One run per selected incident.
-
-    `recommendations`, `cookbook`, and `jira_payload` are still typed
-    loosely (`dict`) because their Pydantic models don't exist yet — Phase 8
-    introduces `Recommendation`/`JiraPayload` and Phase 9 introduces
-    `Cookbook`; each should replace its `dict` placeholder here accordingly.
     """
 
     selected_incident: LogIssue
     root_cause: RCAReport | None
-    recommendations: list[dict[str, Any]] | None
-    cookbook: dict[str, Any] | None
-    jira_payload: dict[str, Any] | None
+    recommendations: list[Recommendation] | None
+    cookbook: Cookbook | None
+    jira_payload: JiraPayload | None

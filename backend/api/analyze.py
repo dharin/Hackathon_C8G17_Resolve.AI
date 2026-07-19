@@ -46,6 +46,8 @@ def analyze_log(
         total_lines=len(text.splitlines()),
         incidents=incidents,
     )
+    # Persisted right after the Log Reader Agent runs; both GET endpoints
+    # below read only from this store, never from re-parsing the log.
     save_analysis(result)
     return result
 
@@ -93,4 +95,9 @@ def get_incident_detail(
         )
 
     workflow_state = get_incident_workflow_graph().invoke({"selected_incident": incident})
-    return IncidentDetail(incident=incident, rca=workflow_state.get("root_cause"))
+    return IncidentDetail(
+        incident=incident,
+        rca=workflow_state.get("root_cause"),
+        recommendations=workflow_state.get("recommendations"),
+        cookbook=workflow_state.get("cookbook"),
+    )

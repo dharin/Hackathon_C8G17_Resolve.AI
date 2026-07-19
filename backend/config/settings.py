@@ -19,8 +19,8 @@ BACKEND_ROOT = REPO_ROOT / "backend"
 UPLOAD_DIR = BACKEND_ROOT / "uploads"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
-ANALYSES_DIR = BACKEND_ROOT / "analyses"
-ANALYSES_DIR.mkdir(parents=True, exist_ok=True)
+ANALYSES_DB_PATH = Path(os.environ.get("ANALYSES_DB_PATH", str(BACKEND_ROOT / "data" / "analyses.sqlite3")))
+ANALYSES_DB_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 ALLOWED_LOG_EXTENSIONS = {".log", ".txt"}
 MAX_UPLOAD_SIZE_BYTES = int(os.environ.get("MAX_UPLOAD_SIZE_MB", "10")) * 1024 * 1024

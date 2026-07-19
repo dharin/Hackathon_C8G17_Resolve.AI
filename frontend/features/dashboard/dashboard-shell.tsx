@@ -39,13 +39,17 @@ export function DashboardShell() {
   const [loadingDetail, setLoadingDetail] = useState(false);
 
   useEffect(() => {
-    if (!analysisId) {
-      setIncidents(null);
-      setIncidentsError(null);
-      return;
-    }
+    // Nothing to fetch — the component renders its own "no analysis yet"
+    // state directly from `analysisId` below, without needing `incidents`.
+    if (!analysisId) return;
 
     let cancelled = false;
+    // This is React's own documented "fetch on mount/dependency change"
+    // pattern (see "You Might Not Need an Effect" > Fetching data) — the
+    // synchronous setState here starts the loading state before the async
+    // fetch below resolves; there's no Suspense/data-library in this repo
+    // to express it declaratively instead.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoadingIncidents(true);
     setIncidentsError(null);
 
@@ -75,12 +79,13 @@ export function DashboardShell() {
   }, [analysisId, getToken, retryCount]);
 
   useEffect(() => {
-    if (!analysisId || !selectedId) {
-      setDetail(null);
-      return;
-    }
+    // Nothing to fetch — `selectedIncident` (derived below) is undefined
+    // without a `selectedId`, so `detail` never gets read in that case.
+    if (!analysisId || !selectedId) return;
 
     let cancelled = false;
+    // Same documented pattern as the incidents effect above.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoadingDetail(true);
     setDetail(null);
 
@@ -172,6 +177,8 @@ export function DashboardShell() {
   const workflowSteps = selectedIncident
     ? computeWorkflowSteps({
         hasRca: Boolean(detail?.rca),
+        remediationRan: detail?.recommendations != null,
+        hasCookbook: Boolean(detail?.cookbook),
         loadingDetail,
       })
     : null;
@@ -185,6 +192,7 @@ export function DashboardShell() {
           <IncidentList
             incidents={incidents}
             selectedId={selectedId}
+            analyzingId={loadingDetail ? selectedId : null}
             onSelect={setSelectedId}
           />
         </div>

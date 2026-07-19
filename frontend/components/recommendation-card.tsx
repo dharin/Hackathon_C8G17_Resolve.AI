@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { SourceReferenceList } from "@/components/source-reference-list";
-import type { Recommendation } from "@/types/incident";
+import type { Recommendation } from "@/types/analysis";
 
 export function RecommendationCard({
   recommendation,
@@ -19,7 +19,7 @@ export function RecommendationCard({
     <Card>
       <CardHeader>
         <CardTitle>{recommendation.title}</CardTitle>
-        <CardDescription>{recommendation.reason}</CardDescription>
+        <CardDescription>{recommendation.rationale}</CardDescription>
         <CardAction>
           <Badge variant="secondary">
             {Math.round(recommendation.confidence * 100)}% confidence

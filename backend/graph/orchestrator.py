@@ -3,7 +3,7 @@ from functools import lru_cache
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
-from graph.nodes import log_reader_node, rca_node
+from graph.nodes import cookbook_node, log_reader_node, rca_node, remediation_node
 from graph.state import DetectionState, IncidentWorkflowState
 
 
@@ -23,12 +23,16 @@ def get_detection_graph() -> CompiledStateGraph:
 def get_incident_workflow_graph() -> CompiledStateGraph:
     """Selected Incident -> RCA -> Remediation -> Cookbook -> Notification.
 
-    Phase 7 adds the first real node ("rca"). Phase 8 inserts
-    "remediation" between "rca" and END, and Phase 9 inserts "cookbook"
-    between "remediation" and END.
+    Phase 7 added "rca". Phase 8 added "remediation". Phase 9 adds
+    "cookbook" between "remediation" and END. Notification (Phase 11)
+    is the only remaining stage.
     """
     graph = StateGraph(IncidentWorkflowState)
     graph.add_node("rca", rca_node)
+    graph.add_node("remediation", remediation_node)
+    graph.add_node("cookbook", cookbook_node)
     graph.add_edge(START, "rca")
-    graph.add_edge("rca", END)
+    graph.add_edge("rca", "remediation")
+    graph.add_edge("remediation", "cookbook")
+    graph.add_edge("cookbook", END)
     return graph.compile()

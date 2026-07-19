@@ -1,4 +1,4 @@
-import { BookX, Compass, FileSearch } from "lucide-react";
+import { Compass, FileSearch } from "lucide-react";
 import { formatFullTimestamp } from "@/lib/format-date";
 import {
   Tabs,
@@ -15,8 +15,11 @@ import {
 } from "@/components/ui/empty";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { SeverityBadge } from "@/components/severity-badge";
 import { RcaPanel } from "@/components/rca-panel";
+import { RecommendationCard } from "@/components/recommendation-card";
+import { CookbookPanel } from "@/components/cookbook-panel";
 import { BottomActionPanel } from "@/components/bottom-action-panel";
 import type { IncidentDetail, LogIssue } from "@/types/analysis";
 
@@ -113,34 +116,41 @@ export function IncidentDetails({
             </TabsContent>
 
             <TabsContent value="recommendations" className="mt-0">
-              <Empty className="border border-dashed">
-                <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <FileSearch />
-                  </EmptyMedia>
-                  <EmptyTitle>Remediation not available yet</EmptyTitle>
-                  <EmptyDescription>
-                    The Remediation Agent (Phase 8) hasn&apos;t been
-                    implemented yet, so no recommendations exist for this
-                    incident.
-                  </EmptyDescription>
-                </EmptyHeader>
-              </Empty>
+              {loadingDetail ? (
+                <div className="flex flex-col gap-3">
+                  <Skeleton className="h-28 rounded-2xl" />
+                  <Skeleton className="h-28 rounded-2xl" />
+                </div>
+              ) : !detail?.recommendations || detail.recommendations.length === 0 ? (
+                <Empty className="border border-dashed">
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <FileSearch />
+                    </EmptyMedia>
+                    <EmptyTitle>No supporting documentation found</EmptyTitle>
+                    <EmptyDescription>
+                      No grounded remediation could be recommended for this
+                      incident.
+                    </EmptyDescription>
+                  </EmptyHeader>
+                </Empty>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {detail.recommendations.map((recommendation) => (
+                    <RecommendationCard
+                      key={recommendation.sources[0]?.chunk_id ?? recommendation.title}
+                      recommendation={recommendation}
+                    />
+                  ))}
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="cookbook" className="mt-0">
-              <Empty className="border border-dashed">
-                <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <BookX />
-                  </EmptyMedia>
-                  <EmptyTitle>Cookbook not available yet</EmptyTitle>
-                  <EmptyDescription>
-                    The Cookbook Agent (Phase 9) hasn&apos;t been implemented
-                    yet, so no runbook exists for this incident.
-                  </EmptyDescription>
-                </EmptyHeader>
-              </Empty>
+              <CookbookPanel
+                cookbook={detail?.cookbook ?? null}
+                loading={loadingDetail}
+              />
             </TabsContent>
 
             <TabsContent value="logs" className="mt-0">

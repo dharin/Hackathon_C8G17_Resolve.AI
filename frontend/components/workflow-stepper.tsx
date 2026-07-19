@@ -17,23 +17,31 @@ export function WorkflowStepper({ steps }: { steps: WorkflowStep[] }) {
             className="flex shrink-0 items-center gap-1 sm:gap-2"
           >
             <div className="flex items-center gap-2">
-              <span
-                aria-hidden
-                className={cn(
-                  "flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-medium",
-                  step.status === "complete" &&
-                    "bg-primary text-primary-foreground",
-                  step.status === "current" &&
-                    "bg-primary/15 text-primary ring-2 ring-primary",
-                  step.status === "pending" &&
-                    "bg-muted text-muted-foreground",
+              <span className="relative flex size-6 shrink-0 items-center justify-center">
+                {step.status === "current" && (
+                  <span
+                    aria-hidden
+                    className="absolute -inset-0.5 animate-spin rounded-full border-2 border-primary border-t-transparent"
+                  />
                 )}
-              >
-                {step.status === "complete" ? (
-                  <Check className="size-3.5" />
-                ) : (
-                  index + 1
-                )}
+                <span
+                  aria-hidden
+                  className={cn(
+                    "flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-medium",
+                    step.status === "complete" &&
+                      "bg-primary text-primary-foreground",
+                    step.status === "current" &&
+                      "bg-primary/15 text-primary",
+                    step.status === "pending" &&
+                      "bg-muted text-muted-foreground",
+                  )}
+                >
+                  {step.status === "complete" ? (
+                    <Check className="size-3.5" />
+                  ) : (
+                    index + 1
+                  )}
+                </span>
               </span>
               <span
                 className={cn(

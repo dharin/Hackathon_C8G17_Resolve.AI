@@ -1,9 +1,9 @@
-from typing import Any
-
 from pydantic import BaseModel
 
+from models.cookbook import Cookbook
 from models.log_issue import LogIssue
 from models.rca_report import RCAReport
+from models.recommendation import Recommendation
 
 
 class IncidentDetail(BaseModel):
@@ -11,14 +11,10 @@ class IncidentDetail(BaseModel):
 
     This is the endpoint later phases extend instead of the original
     `project-spec.md` `GET /incidents/{id}` contract, which Phase 5 diverged
-    from (see tasks/phase-05-log-reader-agent.md "API deviation"):
-    - Phase 8 populates `recommendations` (replace `dict` with
-      `Recommendation` once that model exists).
-    - Phase 9 populates `cookbook` (replace `dict` with `Cookbook` once that
-      model exists).
+    from (see tasks/phase-05-log-reader-agent.md "API deviation").
     """
 
     incident: LogIssue
     rca: RCAReport | None = None
-    recommendations: list[dict[str, Any]] | None = None
-    cookbook: dict[str, Any] | None = None
+    recommendations: list[Recommendation] | None = None
+    cookbook: Cookbook | None = None

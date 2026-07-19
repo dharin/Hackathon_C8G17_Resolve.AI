@@ -7,9 +7,13 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import type { Cookbook } from "@/types/incident";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { Cookbook } from "@/types/analysis";
 
-function StepList({ items }: { items: string[] }) {
+function StepList({ items, emptyLabel }: { items: string[]; emptyLabel: string }) {
+  if (items.length === 0) {
+    return <p className="text-sm text-muted-foreground">{emptyLabel}</p>;
+  }
   return (
     <ol className="flex flex-col gap-1.5">
       {items.map((item, index) => (
@@ -24,7 +28,27 @@ function StepList({ items }: { items: string[] }) {
   );
 }
 
-export function CookbookPanel({ cookbook }: { cookbook: Cookbook | null }) {
+function CookbookPanelSkeleton() {
+  return (
+    <div className="flex flex-col gap-5">
+      <Skeleton className="h-16 rounded-2xl" />
+      <Skeleton className="h-24 rounded-2xl" />
+      <Skeleton className="h-24 rounded-2xl" />
+    </div>
+  );
+}
+
+export function CookbookPanel({
+  cookbook,
+  loading = false,
+}: {
+  cookbook: Cookbook | null;
+  loading?: boolean;
+}) {
+  if (loading) {
+    return <CookbookPanelSkeleton />;
+  }
+
   if (!cookbook) {
     return (
       <Empty className="border border-dashed">
@@ -48,7 +72,7 @@ export function CookbookPanel({ cookbook }: { cookbook: Cookbook | null }) {
           <CardTitle>Root Cause</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-foreground/90">{cookbook.rootCause}</p>
+          <p className="text-sm text-foreground/90">{cookbook.root_cause}</p>
         </CardContent>
       </Card>
 
@@ -57,7 +81,10 @@ export function CookbookPanel({ cookbook }: { cookbook: Cookbook | null }) {
           <CardTitle>Recommended Steps</CardTitle>
         </CardHeader>
         <CardContent>
-          <StepList items={cookbook.steps} />
+          <StepList
+            items={cookbook.steps}
+            emptyLabel="No grounded remediation steps available."
+          />
         </CardContent>
       </Card>
 
@@ -66,16 +93,22 @@ export function CookbookPanel({ cookbook }: { cookbook: Cookbook | null }) {
           <CardTitle>Executable Commands</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col gap-1.5">
-            {cookbook.commands.map((command) => (
-              <pre
-                key={command}
-                className="overflow-x-auto rounded-lg bg-muted px-3 py-2 font-mono text-xs text-foreground/80"
-              >
-                {command}
-              </pre>
-            ))}
-          </div>
+          {cookbook.commands.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No commands found in the supporting documentation.
+            </p>
+          ) : (
+            <div className="flex flex-col gap-1.5">
+              {cookbook.commands.map((command) => (
+                <pre
+                  key={command}
+                  className="overflow-x-auto rounded-lg bg-muted px-3 py-2 font-mono text-xs text-foreground/80"
+                >
+                  {command}
+                </pre>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -85,7 +118,10 @@ export function CookbookPanel({ cookbook }: { cookbook: Cookbook | null }) {
             <CardTitle>Validation</CardTitle>
           </CardHeader>
           <CardContent>
-            <StepList items={cookbook.validation} />
+            <StepList
+              items={cookbook.validation}
+              emptyLabel="No validation guidance found."
+            />
           </CardContent>
         </Card>
         <Card>
@@ -93,7 +129,10 @@ export function CookbookPanel({ cookbook }: { cookbook: Cookbook | null }) {
             <CardTitle>Rollback</CardTitle>
           </CardHeader>
           <CardContent>
-            <StepList items={cookbook.rollback} />
+            <StepList
+              items={cookbook.rollback}
+              emptyLabel="No rollback guidance found."
+            />
           </CardContent>
         </Card>
       </div>
