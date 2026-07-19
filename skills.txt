@@ -1,0 +1,164 @@
+Essential skills
+1. Find Skills
+
+Useful for discovering additional skills later without manually searching the directory.
+
+npx skills add https://github.com/vercel-labs/skills --skill find-skills
+
+It lets Claude search for domain-specific skills while working on the project.
+
+2. Next.js Best Practices
+
+Your frontend uses Next.js 15, so install the Next.js-specific guidance:
+
+npx skills add https://github.com/vercel-labs/next-skills --skill next-best-practices
+
+Also install the broader React performance skill:
+
+npx skills add https://github.com/vercel-labs/agent-skills --skill vercel-react-best-practices
+
+The first helps with App Router conventions, server/client boundaries, async APIs, metadata, and route structure. The second helps avoid data-fetching waterfalls, unnecessary rerenders, oversized client bundles, and inefficient React patterns.
+
+3. shadcn/ui
+
+This is directly relevant because your specification requires shadcn/ui:
+
+npx skills add https://github.com/shadcn/ui --skill shadcn
+
+It helps Claude select, add, compose, style, and troubleshoot shadcn components correctly.
+
+4. Frontend Design
+
+Use this to implement your dark sidebar, light workspace, purple accent, incident cards, workflow stepper, and enterprise dashboard.
+
+npx skills add https://github.com/anthropics/skills --skill frontend-design
+
+It provides frontend design guidance for React interfaces, typography, layout, motion, spacing, and visual consistency.
+
+5. Web Design Guidelines
+
+Install this for accessibility and UI review:
+
+npx skills add https://github.com/vercel-labs/agent-skills --skill web-design-guidelines
+
+Use it after the main dashboard is developed to audit accessibility, interaction behavior, typography, spacing, and general UX quality.
+
+6. Writing Plans and Executing Plans
+
+These are particularly useful because your project already has 13 implementation phases.
+
+npx skills add https://github.com/obra/superpowers --skill writing-plans
+npx skills add https://github.com/obra/superpowers --skill executing-plans
+
+Skills.sh recommends these as a pair: one turns the specification into a structured implementation plan, and the other executes it phase by phase with checkpoints.
+
+7. Test-Driven Development
+npx skills add https://github.com/obra/superpowers --skill test-driven-development
+
+This is helpful for:
+
+Log classification rules
+Severity assignment
+Jira decision logic
+Slack-after-Jira rules
+RAG no-document fallback
+Duplicate ticket prevention
+
+It encourages a failing-test-first, minimal-implementation, verification, and refactoring workflow.
+
+8. Web Application Testing
+npx skills add https://github.com/anthropics/skills --skill webapp-testing
+
+This supports unit, integration, and end-to-end testing patterns across the frontend application.
+
+9. Systematic Debugging
+npx skills add https://github.com/obra/superpowers --skill systematic-debugging
+
+This is valuable when debugging:
+
+LangGraph state transitions
+FastAPI response validation
+Clerk token handling
+LanceDB retrieval
+Confluence incremental sync
+Jira and Slack integration failures
+
+The skill promotes an observe–hypothesize–test–verify approach instead of random code changes.
+
+10. Verification Before Completion
+npx skills add https://github.com/obra/superpowers --skill verification-before-completion
+
+It forces Claude to run a final validation pass before declaring a phase complete. This is useful when you are implementing the project one phase at a time.
+
+Optional skills
+React Composition Patterns
+
+Useful for reusable dashboard components:
+
+npx skills add https://github.com/vercel-labs/agent-skills --skill vercel-composition-patterns
+
+Install this if the UI begins accumulating large components with too many props. It helps with scalable component APIs and composition patterns.
+
+Playwright Best Practices
+
+Useful for browser-level testing of the complete demo:
+
+npx skills add https://github.com/currents-dev/playwright-best-practices-skill --skill playwright-best-practices
+
+Use it for flows such as upload log → select incident → inspect sources → create Jira. Skills.sh identifies it as the focused Playwright testing skill.
+
+Deploy to Vercel
+
+Install only when deploying the frontend to Vercel:
+
+npx skills add https://github.com/vercel-labs/agent-skills --skill deploy-to-vercel
+
+It helps configure deployment, environment variables, and preview builds.
+
+Git Worktrees or Parallel Agents
+
+Only useful when multiple Claude sessions or developers are working in parallel:
+
+npx skills add https://github.com/obra/superpowers --skill dispatching-parallel-agents
+npx skills add https://github.com/obra/superpowers --skill using-git-worktrees
+
+These can separate frontend, backend, AI, and integration workstreams, but they may be unnecessary for a small hackathon team.
+
+Recommended minimal installation
+
+For your project, I would begin with only these eight:
+
+npx skills add https://github.com/vercel-labs/skills --skill find-skills
+
+npx skills add https://github.com/vercel-labs/next-skills --skill next-best-practices
+
+npx skills add https://github.com/vercel-labs/agent-skills --skill vercel-react-best-practices
+
+npx skills add https://github.com/shadcn/ui --skill shadcn
+
+npx skills add https://github.com/anthropics/skills --skill frontend-design
+
+npx skills add https://github.com/obra/superpowers --skill writing-plans
+
+npx skills add https://github.com/obra/superpowers --skill executing-plans
+
+npx skills add https://github.com/obra/superpowers --skill verification-before-completion
+
+Then add testing and debugging skills once the first working vertical slice is ready:
+
+npx skills add https://github.com/obra/superpowers --skill test-driven-development
+
+npx skills add https://github.com/anthropics/skills --skill webapp-testing
+
+npx skills add https://github.com/obra/superpowers --skill systematic-debugging
+Important gap
+
+I did not find a clearly established, high-confidence Skills.sh skill specifically covering your complete Python FastAPI + LangGraph + LangChain + LanceDB backend stack. For that part, Claude should follow:
+
+Your project-spec.md
+Official LangGraph documentation
+Official LangChain documentation
+Official FastAPI documentation
+Official LanceDB documentation
+
+Do not install an obscure LangGraph or RAG skill merely because its title matches the project. For agent orchestration and RAG, accurate official documentation is more important than having another skill package. LangGraph itself is a low-level framework for stateful agent workflows, so your project specification needs to remain the controlling architecture document.
