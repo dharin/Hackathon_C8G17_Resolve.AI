@@ -29,6 +29,8 @@ cp .env.example .env
 
 Creates the git-ignored root `.env` file. Fill in real values locally; never commit it.
 
+To run the frontend with real Clerk auth, set `CLERK_SECRET_KEY`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, and `CLERK_JWKS_URL` from a Clerk dashboard (Configure → API Keys). Without them, the frontend's sign-in page will error. To run the **backend** without a Clerk instance, set `AUTH_PROVIDER=mock` — every request with any bearer token then resolves to a fixed local dev identity.
+
 ### 2. Frontend dependencies
 
 ```
@@ -72,6 +74,12 @@ uvicorn main:app --reload --port 8000
 
 Backend runs at http://localhost:8000. Health check: `GET http://localhost:8000/health` → `{"status": "ok"}`.
 
+Authenticated identity check (requires a bearer token — a real Clerk session token, or any non-empty string when `AUTH_PROVIDER=mock`):
+
+```
+curl -H "Authorization: Bearer <token>" http://localhost:8000/api/v1/me
+```
+
 ## Current Status
 
-Phase 1 (Project Bootstrap) complete: frontend and backend scaffolds run locally with no features implemented yet. See [tasks/phase-01-project-bootstrap.md](tasks/phase-01-project-bootstrap.md) and subsequent phase files for what's next.
+Phase 1 (Project Bootstrap) and Phase 2 (Authentication) complete: Clerk-backed sign-in/sign-out and route protection on the frontend, a mockable auth-provider abstraction and authenticated `/api/v1/me` on the backend. See [tasks/phase-01-project-bootstrap.md](tasks/phase-01-project-bootstrap.md), [tasks/phase-02-authentication.md](tasks/phase-02-authentication.md), and subsequent phase files for what's next.
