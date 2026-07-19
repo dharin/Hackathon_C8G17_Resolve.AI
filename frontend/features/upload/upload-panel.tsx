@@ -1,0 +1,234 @@
+"use client";
+
+import { useCallback, useRef, useState } from "react";
+import { useAuth } from "@clerk/nextjs";
+import {
+  UploadCloud,
+  FileText,
+  CheckCircle2,
+  AlertCircle,
+  X,
+  RotateCcw,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  formatBytes,
+  hasAllowedExtension,
+  MAX_UPLOAD_SIZE_BYTES,
+  ALLOWED_LOG_EXTENSIONS,
+} from "@/lib/upload-config";
+import { uploadLogFile, UploadError } from "@/services/upload-service";
+import type { LogUploadResult } from "@/types/upload";
+
+type UploadState =
+  | { status: "idle" }
+  | { status: "uploading"; file: File; progress: number; abort: () => void }
+  | { status: "success"; file: File; result: LogUploadResult }
+  | { status: "error"; file: File | null; message: string };
+
+function validateFile(file: File): string | null {
+  if (!hasAllowedExtension(file.name)) {
+    return `Unsupported file type. Allowed types: ${ALLOWED_LOG_EXTENSIONS.join(", ")}.`;
+  }
+  if (file.size === 0) {
+    return "File is empty.";
+  }
+  if (file.size > MAX_UPLOAD_SIZE_BYTES) {
+    return `File exceeds the ${formatBytes(MAX_UPLOAD_SIZE_BYTES)} upload limit.`;
+  }
+  return null;
+}
+
+export function UploadPanel() {
+  const { getToken } = useAuth();
+  const [state, setState] = useState<UploadState>({ status: "idle" });
+  const [isDragging, setIsDragging] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const locked = state.status === "uploading";
+
+  const startUpload = useCallback(
+    async (file: File) => {
+      const validationError = validateFile(file);
+      if (validationError) {
+        setState({ status: "error", file: null, message: validationError });
+        return;
+      }
+
+      const token = await getToken();
+      const { promise, abort } = uploadLogFile(file, token, (progress) => {
+        setState((prev) =>
+          prev.status === "uploading" ? { ...prev, progress } : prev,
+        );
+      });
+
+      setState({ status: "uploading", file, progress: 0, abort });
+
+      try {
+        const result = await promise;
+        setState({ status: "success", file, result });
+      } catch (err) {
+        const message =
+          err instanceof UploadError ? err.message : "Upload failed.";
+        setState({ status: "error", file, message });
+      }
+    },
+    [getToken],
+  );
+
+  const handleFiles = useCallback(
+    (files: FileList | null) => {
+      if (locked || !files || files.length === 0) return;
+      startUpload(files[0]);
+    },
+    [locked, startUpload],
+  );
+
+  const reset = useCallback(() => {
+    setState({ status: "idle" });
+    if (inputRef.current) inputRef.current.value = "";
+  }, []);
+
+  return (
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
+      <div
+        role="button"
+        tabIndex={locked ? -1 : 0}
+        aria-disabled={locked}
+        onClick={() => !locked && inputRef.current?.click()}
+        onKeyDown={(e) => {
+          if (!locked && (e.key === "Enter" || e.key === " ")) {
+            e.preventDefault();
+            inputRef.current?.click();
+          }
+        }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          if (!locked) setIsDragging(true);
+        }}
+        onDragLeave={() => setIsDragging(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setIsDragging(false);
+          handleFiles(e.dataTransfer.files);
+        }}
+        className={cn(
+          "flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-10 text-center transition-colors",
+          locked
+            ? "cursor-not-allowed border-border bg-muted/50 opacity-60"
+            : "cursor-pointer border-border bg-card hover:border-primary/50 hover:bg-accent/30",
+          isDragging && !locked && "border-primary bg-accent/50",
+        )}
+      >
+        <input
+          ref={inputRef}
+          type="file"
+          accept={ALLOWED_LOG_EXTENSIONS.join(",")}
+          disabled={locked}
+          className="hidden"
+          onChange={(e) => handleFiles(e.target.files)}
+        />
+        <div className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <UploadCloud className="size-6" />
+        </div>
+        <div>
+          <p className="text-sm font-medium">
+            Drag and drop a log file, or click to browse
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {ALLOWED_LOG_EXTENSIONS.join(" / ")} · up to{" "}
+            {formatBytes(MAX_UPLOAD_SIZE_BYTES)}
+          </p>
+        </div>
+      </div>
+
+      {state.status === "uploading" && (
+        <div className="flex flex-col gap-2 rounded-2xl border border-border bg-card p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-2 text-sm">
+              <FileText className="size-4 shrink-0 text-muted-foreground" />
+              <span className="truncate font-medium">{state.file.name}</span>
+              <span className="shrink-0 text-xs text-muted-foreground">
+                {formatBytes(state.file.size)}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                state.abort();
+                reset();
+              }}
+              aria-label="Cancel upload"
+              className="shrink-0 rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+            >
+              <X className="size-4" />
+            </button>
+          </div>
+          <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full rounded-full bg-primary transition-all"
+              style={{ width: `${state.progress}%` }}
+            />
+          </div>
+          <span className="text-xs text-muted-foreground">
+            Uploading… {state.progress}%
+          </span>
+        </div>
+      )}
+
+      {state.status === "success" && (
+        <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4">
+          <div className="flex items-start gap-2.5">
+            <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium">Upload complete</p>
+              <p className="mt-1 truncate text-xs text-muted-foreground">
+                {state.result.file_name} · {formatBytes(state.result.size_bytes)}
+              </p>
+              <p className="mt-1 font-mono text-xs text-muted-foreground">
+                upload_id: {state.result.upload_id}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={reset}
+            className="inline-flex w-fit items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+          >
+            <RotateCcw className="size-3.5" />
+            Upload another file
+          </button>
+        </div>
+      )}
+
+      {state.status === "error" && (
+        <div className="flex flex-col gap-3 rounded-2xl border border-destructive/30 bg-destructive/5 p-4">
+          <div className="flex items-start gap-2.5">
+            <AlertCircle className="mt-0.5 size-4 shrink-0 text-destructive" />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-destructive">
+                Upload failed
+              </p>
+              {state.file && (
+                <p className="mt-1 truncate text-xs text-muted-foreground">
+                  {state.file.name} · {formatBytes(state.file.size)}
+                </p>
+              )}
+              <p className="mt-1 text-xs text-muted-foreground">
+                {state.message}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={reset}
+            className="inline-flex w-fit items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+          >
+            <RotateCcw className="size-3.5" />
+            Try again
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}

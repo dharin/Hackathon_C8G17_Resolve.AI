@@ -31,6 +31,8 @@ Creates the git-ignored root `.env` file. Fill in real values locally; never com
 
 To run the frontend with real Clerk auth, set `CLERK_SECRET_KEY`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, and `CLERK_JWKS_URL` from a Clerk dashboard (Configure → API Keys). Without them, the frontend's sign-in page will error. To run the **backend** without a Clerk instance, set `AUTH_PROVIDER=mock` — every request with any bearer token then resolves to a fixed local dev identity.
 
+`NEXT_PUBLIC_API_BASE_URL` points the frontend at the backend (defaults to `http://localhost:8000`). `MAX_UPLOAD_SIZE_MB` / `NEXT_PUBLIC_MAX_UPLOAD_SIZE_MB` cap log upload size and must be kept in sync — the backend value is the source of truth, the frontend value is just for immediate client-side feedback.
+
 ### 2. Frontend dependencies
 
 ```
@@ -80,6 +82,18 @@ Authenticated identity check (requires a bearer token — a real Clerk session t
 curl -H "Authorization: Bearer <token>" http://localhost:8000/api/v1/me
 ```
 
+Log upload (same auth requirement):
+
+```
+curl -H "Authorization: Bearer <token>" -F "file=@/path/to/app.log" http://localhost:8000/api/v1/logs/upload
+```
+
 ## Current Status
 
-Phase 1 (Project Bootstrap) and Phase 2 (Authentication) complete: Clerk-backed sign-in/sign-out and route protection on the frontend, a mockable auth-provider abstraction and authenticated `/api/v1/me` on the backend. See [tasks/phase-01-project-bootstrap.md](tasks/phase-01-project-bootstrap.md), [tasks/phase-02-authentication.md](tasks/phase-02-authentication.md), and subsequent phase files for what's next.
+Phases 1–4 complete:
+- **Phase 1** — project bootstrap (Next.js + FastAPI scaffolds).
+- **Phase 2** — Clerk-backed sign-in/sign-out and route protection on the frontend; a mockable auth-provider abstraction and authenticated `/api/v1/me` on the backend.
+- **Phase 3** — dashboard shell (sidebar, top header, workflow stepper, incident list/details, all 12 components) with mock incident data.
+- **Phase 4** — log upload: drag-and-drop/browse UI at `/upload-logs` with client-side validation, progress, and duplicate-submission prevention, backed by `POST /api/v1/logs/upload` (validated, safely stored under `backend/uploads/`, git-ignored).
+
+See [tasks/](tasks/) for the phase-by-phase plan and what's next.

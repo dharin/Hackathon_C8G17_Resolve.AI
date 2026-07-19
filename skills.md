@@ -635,19 +635,19 @@ npx skills add https://github.com/Leonxlnx/taste-skill --skill minimalist-ui
 
 ## Before AI and integration-heavy phases
 
-```bash
-npx skills add https://github.com/obra/superpowers --skill test-driven-development
+# ```bash
+# npx skills add https://github.com/obra/superpowers --skill test-driven-development
 
-npx skills add https://github.com/obra/superpowers --skill systematic-debugging
-```
+# npx skills add https://github.com/obra/superpowers --skill systematic-debugging
+# ```
 
 ## Before end-to-end testing
 
-```bash
-npx skills add https://github.com/anthropics/skills --skill webapp-testing
+# ```bash
+# npx skills add https://github.com/anthropics/skills --skill webapp-testing
 
-npx skills add https://github.com/currents-dev/playwright-best-practices-skill --skill playwright-best-practices
-```
+# npx skills add https://github.com/currents-dev/playwright-best-practices-skill --skill playwright-best-practices
+# ```
 
 ## Before frontend deployment
 
