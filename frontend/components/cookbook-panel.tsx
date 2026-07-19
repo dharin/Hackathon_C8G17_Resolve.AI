@@ -1,3 +1,12 @@
+import { BookX } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import type { Cookbook } from "@/types/incident";
 
 function StepList({ items }: { items: string[] }) {
@@ -18,47 +27,75 @@ function StepList({ items }: { items: string[] }) {
 export function CookbookPanel({ cookbook }: { cookbook: Cookbook | null }) {
   if (!cookbook) {
     return (
-      <div className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-        No runbook generated for this incident yet.
-      </div>
+      <Empty className="border border-dashed">
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <BookX />
+          </EmptyMedia>
+          <EmptyTitle>No runbook yet</EmptyTitle>
+          <EmptyDescription>
+            A runbook has not been generated for this incident.
+          </EmptyDescription>
+        </EmptyHeader>
+      </Empty>
     );
   }
 
   return (
     <div className="flex flex-col gap-5">
-      <section className="rounded-2xl border border-border bg-card p-4">
-        <h3 className="mb-2 text-sm font-semibold">Root Cause</h3>
-        <p className="text-sm text-foreground/90">{cookbook.rootCause}</p>
-      </section>
+      <Card>
+        <CardHeader>
+          <CardTitle>Root Cause</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-foreground/90">{cookbook.rootCause}</p>
+        </CardContent>
+      </Card>
 
-      <section className="rounded-2xl border border-border bg-card p-4">
-        <h3 className="mb-2 text-sm font-semibold">Recommended Steps</h3>
-        <StepList items={cookbook.steps} />
-      </section>
+      <Card>
+        <CardHeader>
+          <CardTitle>Recommended Steps</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <StepList items={cookbook.steps} />
+        </CardContent>
+      </Card>
 
-      <section className="rounded-2xl border border-border bg-card p-4">
-        <h3 className="mb-2 text-sm font-semibold">Executable Commands</h3>
-        <div className="flex flex-col gap-1.5">
-          {cookbook.commands.map((command) => (
-            <pre
-              key={command}
-              className="overflow-x-auto rounded-lg bg-muted px-3 py-2 font-mono text-xs text-foreground/80"
-            >
-              {command}
-            </pre>
-          ))}
-        </div>
-      </section>
+      <Card>
+        <CardHeader>
+          <CardTitle>Executable Commands</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col gap-1.5">
+            {cookbook.commands.map((command) => (
+              <pre
+                key={command}
+                className="overflow-x-auto rounded-lg bg-muted px-3 py-2 font-mono text-xs text-foreground/80"
+              >
+                {command}
+              </pre>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-5 sm:grid-cols-2">
-        <section className="rounded-2xl border border-border bg-card p-4">
-          <h3 className="mb-2 text-sm font-semibold">Validation</h3>
-          <StepList items={cookbook.validation} />
-        </section>
-        <section className="rounded-2xl border border-border bg-card p-4">
-          <h3 className="mb-2 text-sm font-semibold">Rollback</h3>
-          <StepList items={cookbook.rollback} />
-        </section>
+        <Card>
+          <CardHeader>
+            <CardTitle>Validation</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <StepList items={cookbook.validation} />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Rollback</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <StepList items={cookbook.rollback} />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

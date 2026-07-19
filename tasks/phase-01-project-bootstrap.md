@@ -4,7 +4,7 @@
 Establish the repository skeleton and base architecture for both frontend and backend so the application runs locally end-to-end (empty shell).
 
 ## Scope
-- Initialize Next.js 15 frontend with Tailwind CSS and shadcn/ui.
+- Initialize Next.js 16 frontend with Tailwind CSS and shadcn/ui.
 - Initialize FastAPI backend with a minimal health-check endpoint.
 - Establish the shared top-level project structure (`frontend/`, `backend/`, `docs/`, `tasks/`, `.env`).
 - No auth, no agents, no UI features yet — placeholder pages/routes only.

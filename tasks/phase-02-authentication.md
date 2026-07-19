@@ -17,7 +17,7 @@ Secure user access to the frontend using Clerk, and give the backend a modular w
 
 ## Implementation Tasks
 - Install and configure `@clerk/nextjs` (pinned to `6.35.6` — later 6.36+ narrows the React peer range and conflicts with the scaffolded React 19.1.0).
-- Add `middleware.ts` using `clerkMiddleware` + `createRouteMatcher`, protecting all routes except `/sign-in` and `/sign-up`.
+- Add `middleware.ts` using `clerkMiddleware` + `createRouteMatcher`, protecting all routes except `/sign-in` and `/sign-up`. (Renamed to `proxy.ts` during the later Next.js 16 upgrade — same behavior, new file convention.)
 - Wrap the app in `<ClerkProvider>` in `app/layout.tsx`.
 - Add `/sign-in` and `/sign-up` catch-all routes using Clerk's hosted components.
 - Add `components/header.tsx`: shows a loading state while `useUser()` resolves, the username (or email/full name fallback) plus a sign-out button when signed in, and a sign-in link when signed out.

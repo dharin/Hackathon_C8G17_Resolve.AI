@@ -1,18 +1,7 @@
 import { cn } from "@/lib/utils";
+import { formatShortTimestamp } from "@/lib/format-date";
 import { SeverityBadge } from "@/components/severity-badge";
 import type { Incident } from "@/types/incident";
-
-function formatTimestamp(iso: string) {
-  // Fixed locale + timeZone so server and client render identical text —
-  // otherwise this mismatches the browser's locale/TZ and breaks hydration.
-  return new Date(iso).toLocaleString("en-US", {
-    timeZone: "UTC",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
 
 export function IncidentCard({
   incident,
@@ -44,7 +33,7 @@ export function IncidentCard({
           {incident.service}
         </span>
         <span aria-hidden>·</span>
-        <span>{formatTimestamp(incident.timestamp)}</span>
+        <span>{formatShortTimestamp(incident.timestamp)}</span>
       </div>
     </button>
   );

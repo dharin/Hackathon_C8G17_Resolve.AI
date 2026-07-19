@@ -11,6 +11,13 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Progress,
+  ProgressLabel,
+  ProgressValue,
+} from "@/components/ui/progress";
 import {
   formatBytes,
   hasAllowedExtension,
@@ -143,7 +150,7 @@ export function UploadPanel() {
       </div>
 
       {state.status === "uploading" && (
-        <div className="flex flex-col gap-2 rounded-2xl border border-border bg-card p-4">
+        <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-2 text-sm">
               <FileText className="size-4 shrink-0 text-muted-foreground" />
@@ -152,81 +159,67 @@ export function UploadPanel() {
                 {formatBytes(state.file.size)}
               </span>
             </div>
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Cancel upload"
               onClick={() => {
                 state.abort();
                 reset();
               }}
-              aria-label="Cancel upload"
-              className="shrink-0 rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
             >
-              <X className="size-4" />
-            </button>
+              <X />
+            </Button>
           </div>
-          <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full rounded-full bg-primary transition-all"
-              style={{ width: `${state.progress}%` }}
-            />
-          </div>
-          <span className="text-xs text-muted-foreground">
-            Uploading… {state.progress}%
-          </span>
+          <Progress value={state.progress}>
+            <ProgressLabel className="text-xs text-muted-foreground">
+              Uploading…
+            </ProgressLabel>
+            <ProgressValue className="text-xs" />
+          </Progress>
         </div>
       )}
 
       {state.status === "success" && (
-        <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4">
-          <div className="flex items-start gap-2.5">
-            <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" />
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium">Upload complete</p>
-              <p className="mt-1 truncate text-xs text-muted-foreground">
-                {state.result.file_name} · {formatBytes(state.result.size_bytes)}
-              </p>
-              <p className="mt-1 font-mono text-xs text-muted-foreground">
+        <div className="flex flex-col gap-3">
+          <Alert>
+            <CheckCircle2 className="text-primary" />
+            <AlertTitle>Upload complete</AlertTitle>
+            <AlertDescription>
+              <span className="truncate">
+                {state.result.file_name} ·{" "}
+                {formatBytes(state.result.size_bytes)}
+              </span>
+              <span className="font-mono">
                 upload_id: {state.result.upload_id}
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={reset}
-            className="inline-flex w-fit items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
-          >
-            <RotateCcw className="size-3.5" />
+              </span>
+            </AlertDescription>
+          </Alert>
+          <Button variant="outline" className="w-fit" onClick={reset}>
+            <RotateCcw data-icon="inline-start" />
             Upload another file
-          </button>
+          </Button>
         </div>
       )}
 
       {state.status === "error" && (
-        <div className="flex flex-col gap-3 rounded-2xl border border-destructive/30 bg-destructive/5 p-4">
-          <div className="flex items-start gap-2.5">
-            <AlertCircle className="mt-0.5 size-4 shrink-0 text-destructive" />
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-destructive">
-                Upload failed
-              </p>
+        <div className="flex flex-col gap-3">
+          <Alert variant="destructive">
+            <AlertCircle />
+            <AlertTitle>Upload failed</AlertTitle>
+            <AlertDescription>
               {state.file && (
-                <p className="mt-1 truncate text-xs text-muted-foreground">
+                <span className="truncate">
                   {state.file.name} · {formatBytes(state.file.size)}
-                </p>
+                </span>
               )}
-              <p className="mt-1 text-xs text-muted-foreground">
-                {state.message}
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={reset}
-            className="inline-flex w-fit items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
-          >
-            <RotateCcw className="size-3.5" />
+              <span>{state.message}</span>
+            </AlertDescription>
+          </Alert>
+          <Button variant="outline" className="w-fit" onClick={reset}>
+            <RotateCcw data-icon="inline-start" />
             Try again
-          </button>
+          </Button>
         </div>
       )}
     </div>

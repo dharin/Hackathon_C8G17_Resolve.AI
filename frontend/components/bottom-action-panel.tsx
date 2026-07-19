@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { CheckCircle2, Ticket, MessageSquare } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import type { Incident } from "@/types/incident";
 
 export function BottomActionPanel({ incident }: { incident: Incident }) {
@@ -14,56 +16,40 @@ export function BottomActionPanel({ incident }: { incident: Incident }) {
   return (
     <div className="glass-surface sticky bottom-0 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border px-4 py-3">
       {isCritical ? (
-        <div className="flex flex-wrap items-center gap-3 text-sm">
+        <div className="flex flex-wrap items-center gap-2 text-sm">
           <span className="text-muted-foreground">Critical incident —</span>
-          <span
-            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
-              notificationSent
-                ? "bg-primary/10 text-primary"
-                : "bg-muted text-muted-foreground"
-            }`}
-          >
-            <Ticket className="size-3.5" />
+          <Badge variant={notificationSent ? "secondary" : "outline"}>
+            <Ticket />
             Jira {notificationSent ? "created automatically" : "pending"}
-          </span>
-          <span
-            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
-              notificationSent
-                ? "bg-primary/10 text-primary"
-                : "bg-muted text-muted-foreground"
-            }`}
-          >
-            <MessageSquare className="size-3.5" />
+          </Badge>
+          <Badge variant={notificationSent ? "secondary" : "outline"}>
+            <MessageSquare />
             Slack {notificationSent ? "notified automatically" : "pending"}
-          </span>
+          </Badge>
         </div>
       ) : (
-        <div className="flex items-center gap-3">
-          <span className="text-sm text-muted-foreground">
-            Non-critical incident — Jira creation is manual.
-          </span>
-        </div>
+        <span className="text-sm text-muted-foreground">
+          Non-critical incident — Jira creation is manual.
+        </span>
       )}
 
       {!isCritical && (
-        <button
-          type="button"
+        <Button
           disabled={manualTicketCreated}
           onClick={() => setManualTicketCreated(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
         >
           {manualTicketCreated ? (
             <>
-              <CheckCircle2 className="size-4" />
+              <CheckCircle2 data-icon="inline-start" />
               Ticket created
             </>
           ) : (
             <>
-              <Ticket className="size-4" />
+              <Ticket data-icon="inline-start" />
               Create Jira Ticket
             </>
           )}
-        </button>
+        </Button>
       )}
     </div>
   );

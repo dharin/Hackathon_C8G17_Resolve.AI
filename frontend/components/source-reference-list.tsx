@@ -1,4 +1,6 @@
 import { FileText, HardDrive, History, ExternalLink } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import type { SourceReference, SourceType } from "@/types/incident";
 
 const SOURCE_ICON: Record<SourceType, typeof FileText> = {
@@ -41,23 +43,26 @@ export function SourceReferenceList({
                 <span className="truncate text-sm font-medium">
                   {source.title}
                 </span>
-                <span className="shrink-0 rounded-full bg-accent px-2 py-0.5 text-[10px] font-medium text-accent-foreground">
-                  {SOURCE_LABEL[source.type]}
-                </span>
+                <Badge variant="secondary">{SOURCE_LABEL[source.type]}</Badge>
               </div>
               <p className="mt-0.5 text-xs text-muted-foreground">
                 {source.section} · Updated {source.lastUpdated}
               </p>
             </div>
-            <a
-              href={source.url}
-              target="_blank"
-              rel="noopener noreferrer"
+            <Button
+              variant="ghost"
+              size="icon-xs"
               aria-label={`Open ${source.title}`}
-              className="shrink-0 rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              render={
+                <a
+                  href={source.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                />
+              }
             >
-              <ExternalLink className="size-3.5" />
-            </a>
+              <ExternalLink />
+            </Button>
           </li>
         );
       })}

@@ -1,10 +1,20 @@
+import { FileSearch } from "lucide-react";
+import { formatFullTimestamp } from "@/lib/format-date";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 import { SeverityBadge } from "@/components/severity-badge";
 import { RcaPanel } from "@/components/rca-panel";
 import { RecommendationCard } from "@/components/recommendation-card";
@@ -19,16 +29,6 @@ const LOG_LEVEL_STYLES: Record<string, string> = {
   FATAL: "text-red-700 dark:text-red-300 font-semibold",
 };
 
-function formatTimestamp(iso: string) {
-  // Fixed locale + timeZone so server and client render identical text —
-  // otherwise this mismatches the browser's locale/TZ and breaks hydration.
-  return new Date(iso).toLocaleString("en-US", {
-    timeZone: "UTC",
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
-}
-
 export function IncidentDetails({ incident }: { incident: Incident }) {
   return (
     <div className="flex h-full flex-col rounded-2xl border border-border bg-card/50">
@@ -38,7 +38,7 @@ export function IncidentDetails({ incident }: { incident: Incident }) {
             <h2 className="text-base font-semibold">{incident.title}</h2>
             <p className="mt-1 text-xs text-muted-foreground">
               {incident.metadata.incidentId} · {incident.service} ·{" "}
-              {formatTimestamp(incident.timestamp)}
+              {formatFullTimestamp(incident.timestamp)}
             </p>
           </div>
           <SeverityBadge severity={incident.severity} />
@@ -105,9 +105,18 @@ export function IncidentDetails({ incident }: { incident: Incident }) {
 
             <TabsContent value="recommendations" className="mt-0">
               {incident.recommendations.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-                  No supporting documentation found.
-                </div>
+                <Empty className="border border-dashed">
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <FileSearch />
+                    </EmptyMedia>
+                    <EmptyTitle>No supporting documentation found</EmptyTitle>
+                    <EmptyDescription>
+                      No grounded remediation could be recommended for this
+                      incident.
+                    </EmptyDescription>
+                  </EmptyHeader>
+                </Empty>
               ) : (
                 <div className="flex flex-col gap-3">
                   {incident.recommendations.map((recommendation) => (
@@ -176,12 +185,9 @@ export function IncidentDetails({ incident }: { incident: Incident }) {
                     <dt className="text-xs text-muted-foreground">Tags</dt>
                     <dd className="flex flex-wrap gap-1.5">
                       {incident.metadata.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground"
-                        >
+                        <Badge key={tag} variant="secondary">
                           {tag}
-                        </span>
+                        </Badge>
                       ))}
                     </dd>
                   </div>

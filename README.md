@@ -5,7 +5,7 @@ Hackathon build of an AI-powered DevOps incident analysis platform. See [project
 ## Project Structure
 
 ```
-frontend/   Next.js 15 app (dashboard UI)
+frontend/   Next.js 16 app (dashboard UI)
 backend/    FastAPI app (agents, RAG, integrations)
 docs/       Architecture and supporting docs
 tasks/      Phase-by-phase implementation tasks
@@ -13,7 +13,7 @@ tasks/      Phase-by-phase implementation tasks
 
 ## Prerequisites
 
-- Node.js 20+ (Next.js 15 / Tailwind v4 / shadcn require it — use `nvm use` in `frontend/`, an `.nvmrc` pinning Node 22 is provided)
+- Node.js 20+ (Next.js 16 / Tailwind v4 / shadcn require it — use `nvm use` in `frontend/`, an `.nvmrc` pinning Node 22 is provided)
 - Python 3.11+
 - npm
 

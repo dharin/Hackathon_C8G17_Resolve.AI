@@ -1,6 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { MousePointerClick } from "lucide-react";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { WorkflowStepper } from "@/components/workflow-stepper";
 import { IncidentList } from "@/components/incident-list";
 import { IncidentDetails } from "@/components/incident-details";
@@ -29,9 +37,17 @@ export function DashboardShell({ incidents }: { incidents: Incident[] }) {
           {selected ? (
             <IncidentDetails incident={selected} />
           ) : (
-            <div className="flex h-full items-center justify-center rounded-2xl border border-dashed border-border text-sm text-muted-foreground">
-              Select an incident to view details.
-            </div>
+            <Empty className="h-full border border-dashed">
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <MousePointerClick />
+                </EmptyMedia>
+                <EmptyTitle>No incident selected</EmptyTitle>
+                <EmptyDescription>
+                  Select an incident from the list to view its analysis.
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           )}
         </div>
       </div>

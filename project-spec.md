@@ -186,7 +186,7 @@ Manual Jira button
 
 ## Frontend
 
-* Next.js 15
+* Next.js 16
 * React
 * Tailwind CSS
 * shadcn/ui

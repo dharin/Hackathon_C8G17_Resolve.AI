@@ -2,6 +2,7 @@
 
 import { SignedIn, SignedOut, SignOutButton, useUser } from "@clerk/nextjs";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MobileSidebar } from "@/components/sidebar";
 
@@ -41,18 +42,19 @@ export function TopHeader() {
                   "Signed in"}
               </span>
               <SignOutButton>
-                <button className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium hover:bg-accent hover:text-accent-foreground">
+                <Button variant="outline" size="sm">
                   Sign out
-                </button>
+                </Button>
               </SignOutButton>
             </SignedIn>
             <SignedOut>
-              <Link
-                href="/sign-in"
-                className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+              <Button
+                variant="outline"
+                size="sm"
+                render={<Link href="/sign-in" />}
               >
                 Sign in
-              </Link>
+              </Button>
             </SignedOut>
           </>
         )}

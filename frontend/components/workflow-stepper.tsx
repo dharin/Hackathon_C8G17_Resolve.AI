@@ -4,13 +4,21 @@ import type { WorkflowStep } from "@/types/incident";
 
 export function WorkflowStepper({ steps }: { steps: WorkflowStep[] }) {
   return (
-    <ol className="flex items-center gap-1 overflow-x-auto rounded-2xl border border-border bg-card px-3 py-3 sm:gap-2 sm:px-4">
+    <ol
+      aria-label="Analysis workflow progress"
+      className="flex items-center gap-1 overflow-x-auto rounded-2xl border border-border bg-card px-3 py-3 sm:gap-2 sm:px-4"
+    >
       {steps.map((step, index) => {
         const isLast = index === steps.length - 1;
         return (
-          <li key={step.id} className="flex shrink-0 items-center gap-1 sm:gap-2">
+          <li
+            key={step.id}
+            aria-current={step.status === "current" ? "step" : undefined}
+            className="flex shrink-0 items-center gap-1 sm:gap-2"
+          >
             <div className="flex items-center gap-2">
               <span
+                aria-hidden
                 className={cn(
                   "flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-medium",
                   step.status === "complete" &&

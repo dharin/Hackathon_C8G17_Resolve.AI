@@ -162,7 +162,7 @@ npx skills add https://github.com/wshobson/agents --skill nextjs-app-router-patt
 
 **Project-specific rules**
 
-* Use Next.js 15.
+* Use Next.js 16.
 * Use TypeScript.
 * Keep interactive dashboard components as Client Components only where required.
 * Keep authentication and route protection centralized.
