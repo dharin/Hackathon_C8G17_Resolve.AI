@@ -1,14 +1,38 @@
-# Dependencies
+# --- Node / npm ---
 node_modules/
 .pnp
 .pnp.js
+.yarn/install-state.gz
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- Next.js ---
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+.vercel
+
+# --- Python ---
 venv/
 .venv/
 env/
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
 
-# Environment & secrets
+# --- Environment & secrets ---
 .env
 .env.*
 !.env.example
@@ -17,20 +41,15 @@ __pycache__/
 credentials.json
 secrets.json
 
-# Build output
+# --- Build output ---
 dist/
 build/
-out/
-*.tsbuildinfo
 
-# Logs
+# --- Logs ---
 logs/
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
-# Agent / LLM run artifacts
+# --- Agent / LLM run artifacts ---
 .claude/settings.local.json
 .agents/**/cache/
 .agents/**/tmp/
@@ -40,29 +59,33 @@ transcripts/
 runs/
 checkpoints/
 
-# Vector stores / embeddings / model caches
+# --- Vector stores / embeddings / model caches / local uploads ---
 *.faiss
 *.index
+*.lance
+lancedb/
+.lancedb/
 chroma/
 .chroma/
 .cache/
 .model_cache/
 *.gguf
 *.safetensors
+uploads/
 
-# OS files
+# --- OS files ---
 .DS_Store
 Thumbs.db
 
-# IDE
+# --- IDE ---
 .vscode/*
 !.vscode/extensions.json
 .idea/
 
-# Testing / coverage
+# --- Testing / coverage ---
 coverage/
 .nyc_output/
 
-# Misc
+# --- Misc ---
 *.tmp
 *.bak
