@@ -81,6 +81,12 @@ analyses/
 backend/data/rag_sync_state.sqlite3
 backend/data/rag_sync_meta.sqlite3
 
+# Other per-machine runtime state — committing these overwrites one
+# laptop's Jira/Slack/analysis history with another's on every pull.
+backend/data/analyses.sqlite3
+backend/data/jira_tickets.sqlite3
+backend/data/slack_notifications.sqlite3
+
 # --- OS files ---
 .DS_Store
 Thumbs.db
