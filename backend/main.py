@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.analyze import router as analyze_router
+from api.health import router as health_router
 from api.jira import router as jira_router
 from api.me import router as me_router
 from api.rag import router as rag_router
@@ -46,6 +47,7 @@ app.include_router(analyze_router)
 app.include_router(rag_router)
 app.include_router(jira_router)
 app.include_router(slack_router)
+app.include_router(health_router)
 
 
 @app.get("/health")

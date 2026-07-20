@@ -22,6 +22,16 @@ os.environ["JIRA_PROJECT_KEY"] = ""
 # is configured (see services/slack_service.py's auto-notify path).
 os.environ["SLACK_BOT_TOKEN"] = ""
 os.environ["SLACK_CHANNEL_ID"] = ""
+# services/health_service.py reads these directly (not via config.settings),
+# so they need the same treatment: without this, the health-check tests'
+# result would depend on whether the developer's local .env happens to have
+# real Clerk credentials.
+os.environ["CLERK_SECRET_KEY"] = ""
+os.environ["CLERK_JWKS_URL"] = ""
+os.environ["CONFLUENCE_SITE_URL"] = ""
+os.environ["CONFLUENCE_EMAIL"] = ""
+os.environ["CONFLUENCE_API_TOKEN"] = ""
+os.environ["CONFLUENCE_CLOUD_ID"] = ""
 
 
 class _EmptyRetriever:

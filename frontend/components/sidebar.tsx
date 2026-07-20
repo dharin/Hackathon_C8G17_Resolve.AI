@@ -17,6 +17,7 @@ import {
   SheetTrigger,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { HealthCheckButton } from "@/components/health-check-panel";
 
 const NAV_ITEMS = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -73,6 +74,9 @@ export function Sidebar() {
       <div className="mt-4 flex flex-1 flex-col">
         <NavList />
       </div>
+      <div className="border-t border-sidebar-border px-2 pt-2">
+        <HealthCheckButton />
+      </div>
     </aside>
   );
 }
@@ -101,6 +105,9 @@ export function MobileSidebar() {
         <Brand />
         <div className="mt-4 flex flex-1 flex-col">
           <NavList onNavigate={() => setOpen(false)} />
+        </div>
+        <div className="border-t border-sidebar-border px-2 pt-2">
+          <HealthCheckButton />
         </div>
       </SheetContent>
     </Sheet>
