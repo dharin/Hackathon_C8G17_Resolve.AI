@@ -1,19 +1,10 @@
-import { FileText, FolderOpen, ExternalLink } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { formatShortTimestamp } from "@/lib/format-date";
-import type { SourceType } from "@/types/incident";
+"use client";
+
+import { useState } from "react";
+import { useAuth } from "@clerk/nextjs";
+import { cn } from "@/lib/utils";
+import { openLocalSopDocument } from "@/services/rag-service";
 import type { RetrievedChunk } from "@/types/analysis";
-
-const SOURCE_ICON: Record<SourceType, typeof FileText> = {
-  confluence: FileText,
-  local_sop: FolderOpen,
-};
-
-const SOURCE_LABEL: Record<SourceType, string> = {
-  confluence: "Confluence",
-  local_sop: "Local SOP",
-};
 
 export function SourceReferenceList({
   sources,
@@ -29,59 +20,62 @@ export function SourceReferenceList({
   }
 
   return (
-    <ul className="flex flex-col gap-2">
-      {sources.map((source) => {
-        const Icon = SOURCE_ICON[source.source_type];
-        return (
-          <li
-            key={source.chunk_id}
-            className="flex items-start gap-2.5 rounded-xl border border-border bg-background px-3 py-2"
-          >
-            <Icon className="mt-0.5 size-4 shrink-0 text-primary" />
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <span className="truncate text-sm font-medium">
-                  {source.title}
-                </span>
-                <Badge variant="secondary">
-                  {SOURCE_LABEL[source.source_type]}
-                </Badge>
-              </div>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                {source.section_path.length > 0
-                  ? source.section_path.join(" › ")
-                  : "Untitled section"}{" "}
-                · Updated{" "}
-                {source.updated_at
-                  ? formatShortTimestamp(source.updated_at)
-                  : "unknown"}
-              </p>
-              {source.source_type === "local_sop" && (
-                <p className="mt-0.5 truncate font-mono text-xs text-muted-foreground/80">
-                  {source.source_uri}
-                </p>
-              )}
-            </div>
-            {source.source_type === "confluence" && (
-              <Button
-                variant="ghost"
-                size="icon-xs"
-                aria-label={`Open ${source.title}`}
-                nativeButton={false}
-                render={
-                  <a
-                    href={source.source_uri}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  />
-                }
-              >
-                <ExternalLink />
-              </Button>
-            )}
-          </li>
-        );
-      })}
+    <ul className="flex flex-col gap-1">
+      {sources.map((source) => (
+        <li key={source.chunk_id}>
+          <SourceLink source={source} />
+        </li>
+      ))}
     </ul>
+  );
+}
+
+const LINK_CLASSNAME =
+  "text-left text-sm font-medium text-primary underline-offset-2 hover:underline disabled:cursor-not-allowed disabled:opacity-60";
+
+function SourceLink({ source }: { source: RetrievedChunk }) {
+  const { getToken } = useAuth();
+  const [opening, setOpening] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  if (source.source_type === "confluence") {
+    return (
+      <a
+        href={source.source_uri}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={LINK_CLASSNAME}
+      >
+        {source.title}
+      </a>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-0.5">
+      <button
+        type="button"
+        disabled={opening}
+        onClick={async () => {
+          // Must be the first synchronous statement in this handler — see
+          // openLocalSopDocument's doc comment.
+          const newTab = window.open("", "_blank");
+          setError(null);
+          setOpening(true);
+          try {
+            const token = await getToken();
+            await openLocalSopDocument(source.source_uri, token, newTab);
+          } catch {
+            setError("Couldn't open this document.");
+          } finally {
+            setOpening(false);
+          }
+        }}
+        className={cn(LINK_CLASSNAME)}
+      >
+        {source.title}
+      </button>
+      {error && <span className="text-xs text-destructive">{error}</span>}
+    </div>
   );
 }

@@ -136,6 +136,76 @@ def test_sync_failure_does_not_advance_last_synced_at(client: TestClient, monkey
     assert {s["source_type"] for s in body["summaries"]} == {"local_sop"}
 
 
+def test_get_local_sop_file_requires_auth(client: TestClient):
+    response = client.get("/api/v1/rag/sops/whatever.md")
+    assert response.status_code == 401
+
+
+def test_get_local_sop_file_returns_content(client: TestClient, tmp_path: Path, monkeypatch):
+    (tmp_path / "runbook.md").write_text("# Runbook\n\nDo the thing.", encoding="utf-8")
+    monkeypatch.setattr(rag_api, "LOCAL_SOP_DIRECTORY", tmp_path)
+
+    response = client.get("/api/v1/rag/sops/runbook.md", headers=AUTH_HEADERS)
+
+    assert response.status_code == 200, response.text
+    assert response.text == "# Runbook\n\nDo the thing."
+    assert response.headers["content-type"].startswith("text/plain")
+    assert "inline" in response.headers["content-disposition"]
+
+
+def test_get_local_sop_file_supports_nested_paths(client: TestClient, tmp_path: Path, monkeypatch):
+    nested = tmp_path / "checkout-api"
+    nested.mkdir()
+    (nested / "pool.md").write_text("nested doc", encoding="utf-8")
+    monkeypatch.setattr(rag_api, "LOCAL_SOP_DIRECTORY", tmp_path)
+
+    response = client.get("/api/v1/rag/sops/checkout-api/pool.md", headers=AUTH_HEADERS)
+
+    assert response.status_code == 200, response.text
+    assert response.text == "nested doc"
+
+
+def test_get_local_sop_file_unknown_file_returns_404(client: TestClient, tmp_path: Path, monkeypatch):
+    monkeypatch.setattr(rag_api, "LOCAL_SOP_DIRECTORY", tmp_path)
+
+    response = client.get("/api/v1/rag/sops/does-not-exist.md", headers=AUTH_HEADERS)
+
+    assert response.status_code == 404
+
+
+def test_get_local_sop_file_disallowed_extension_returns_404(client: TestClient, tmp_path: Path, monkeypatch):
+    (tmp_path / "secrets.env").write_text("API_KEY=x", encoding="utf-8")
+    monkeypatch.setattr(rag_api, "LOCAL_SOP_DIRECTORY", tmp_path)
+
+    response = client.get("/api/v1/rag/sops/secrets.env", headers=AUTH_HEADERS)
+
+    assert response.status_code == 404
+
+
+def test_get_local_sop_file_path_traversal_returns_404(client: TestClient, tmp_path: Path, monkeypatch):
+    sop_dir = tmp_path / "sops"
+    sop_dir.mkdir()
+    outside_file = tmp_path / "outside.md"
+    outside_file.write_text("should never be served", encoding="utf-8")
+    monkeypatch.setattr(rag_api, "LOCAL_SOP_DIRECTORY", sop_dir)
+
+    response = client.get("/api/v1/rag/sops/../outside.md", headers=AUTH_HEADERS)
+
+    assert response.status_code == 404
+
+
+def test_get_local_sop_file_absolute_path_returns_404(client: TestClient, tmp_path: Path, monkeypatch):
+    sop_dir = tmp_path / "sops"
+    sop_dir.mkdir()
+    monkeypatch.setattr(rag_api, "LOCAL_SOP_DIRECTORY", sop_dir)
+
+    # An absolute path in the {relative_path:path} segment, guarding against
+    # pathlib's own footgun: Path("/a") / "/etc/passwd" == Path("/etc/passwd").
+    response = client.get("/api/v1/rag/sops//etc/passwd", headers=AUTH_HEADERS)
+
+    assert response.status_code == 404
+
+
 def test_sync_failure_rolls_back_to_previous_last_synced_at(client: TestClient, monkeypatch):
     previous = rag_sync_meta_store.set_last_synced_at()
 

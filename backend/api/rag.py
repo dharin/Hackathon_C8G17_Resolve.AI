@@ -1,8 +1,10 @@
 import logging
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import FileResponse
 
 from api.deps import get_current_user
+from config.settings import LOCAL_SOP_ALLOWED_EXTENSIONS, LOCAL_SOP_DIRECTORY
 from models.rag_sync_result import RagSyncResult, RagSyncStatus
 from models.user import UserIdentity
 from rag.models import RetrievedChunk, SourceSyncSummary
@@ -12,6 +14,16 @@ from services import rag_sync_meta_store
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/rag", tags=["rag"])
+
+# Browsers can't render .docx inline; it downloads instead, which is an
+# acceptable fallback for "open in a new tab". .md is served as plain text
+# rather than text/markdown so it displays instead of prompting a download.
+_LOCAL_SOP_MEDIA_TYPES = {
+    ".md": "text/plain; charset=utf-8",
+    ".txt": "text/plain; charset=utf-8",
+    ".pdf": "application/pdf",
+    ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+}
 
 
 @router.get("/status", response_model=RagSyncStatus)
@@ -65,6 +77,40 @@ def sync_knowledge_sources(
         summaries=summaries,
         last_synced_at=rag_sync_meta_store.get_last_synced_at(),
         errors=errors,
+    )
+
+
+@router.get("/sops/{relative_path:path}")
+def get_local_sop_file(
+    relative_path: str,
+    _user: UserIdentity = Depends(get_current_user),
+) -> FileResponse:
+    """Serves a local SOP document's raw content so the "Supporting sources"
+    list can open it in a new browser tab the same way a Confluence link
+    does — Confluence source_uri values are already real URLs, but local
+    SOPs only ever carried a relative filename with nothing to serve it.
+
+    The path is resolved and re-checked against the configured SOP
+    directory (not just prefix-matched) so a `../` or an absolute
+    `relative_path` can't escape it — see rag/loaders/local_directory.py for
+    the same directory this endpoint reads from.
+    """
+    base_dir = LOCAL_SOP_DIRECTORY.resolve()
+    candidate = (base_dir / relative_path).resolve()
+    if candidate != base_dir and base_dir not in candidate.parents:
+        raise HTTPException(status_code=404, detail="SOP document not found")
+
+    extension = candidate.suffix.lower()
+    if extension not in LOCAL_SOP_ALLOWED_EXTENSIONS or extension not in _LOCAL_SOP_MEDIA_TYPES:
+        raise HTTPException(status_code=404, detail="SOP document not found")
+    if not candidate.is_file():
+        raise HTTPException(status_code=404, detail="SOP document not found")
+
+    return FileResponse(
+        candidate,
+        media_type=_LOCAL_SOP_MEDIA_TYPES[extension],
+        filename=candidate.name,
+        content_disposition_type="inline",
     )
 
 
