@@ -1,13 +1,15 @@
 "use client";
 
-import { SignedIn, SignedOut, SignOutButton, useUser } from "@clerk/nextjs";
+import { SignedIn, SignedOut, useClerk, useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MobileSidebar } from "@/components/sidebar";
+import { clearPersistedAnalysisId } from "@/lib/analysis-session";
 
 export function TopHeader() {
   const { user, isLoaded } = useUser();
+  const { signOut } = useClerk();
 
   return (
     <header className="glass-surface sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-border px-4 py-3 sm:px-6">
@@ -41,11 +43,16 @@ export function TopHeader() {
                   user?.primaryEmailAddress?.emailAddress ??
                   "Signed in"}
               </span>
-              <SignOutButton>
-                <Button variant="outline" size="sm">
-                  Sign out
-                </Button>
-              </SignOutButton>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  clearPersistedAnalysisId();
+                  signOut();
+                }}
+              >
+                Sign out
+              </Button>
             </SignedIn>
             <SignedOut>
               <Button

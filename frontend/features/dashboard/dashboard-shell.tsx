@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { AlertCircle, MousePointerClick, UploadCloud } from "lucide-react";
 import {
@@ -19,6 +19,10 @@ import { IncidentList } from "@/components/incident-list";
 import { IncidentDetails } from "@/components/incident-details";
 import { computeWorkflowSteps } from "@/lib/workflow-steps";
 import {
+  getPersistedAnalysisId,
+  setPersistedAnalysisId,
+} from "@/lib/analysis-session";
+import {
   AnalysisError,
   getAnalysisIncidents,
   getIncidentDetail,
@@ -26,8 +30,36 @@ import {
 import type { IncidentDetail, JiraTicketReference, LogIssue } from "@/types/analysis";
 
 export function DashboardShell() {
-  const analysisId = useSearchParams().get("analysis");
+  const router = useRouter();
+  const urlAnalysisId = useSearchParams().get("analysis");
   const { getToken } = useAuth();
+
+  // Mirrors the URL's `analysis` param, but survives navigating away and
+  // back (e.g. to another sidebar item) via sessionStorage — see
+  // lib/analysis-session.ts. Starts equal to the URL param (matches SSR;
+  // sessionStorage is only ever consulted client-side, in the effect below,
+  // to avoid a hydration mismatch).
+  const [analysisId, setAnalysisId] = useState<string | null>(urlAnalysisId);
+
+  useEffect(() => {
+    // Same documented "sync with an external system" pattern as the
+    // fetch effects below (URL / sessionStorage here, rather than a
+    // network request) — see their comment for the rule this suppresses.
+    if (urlAnalysisId) {
+      setPersistedAnalysisId(urlAnalysisId);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setAnalysisId(urlAnalysisId);
+      return;
+    }
+    const persisted = getPersistedAnalysisId();
+    if (persisted) {
+      // Restore into the URL too, so refresh/copy-link keep working.
+      router.replace(`/?analysis=${persisted}`, { scroll: false });
+      setAnalysisId(persisted);
+    } else {
+      setAnalysisId(null);
+    }
+  }, [urlAnalysisId, router]);
 
   const [incidents, setIncidents] = useState<LogIssue[] | null>(null);
   const [incidentsError, setIncidentsError] = useState<string | null>(null);
