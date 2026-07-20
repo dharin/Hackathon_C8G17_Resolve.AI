@@ -33,6 +33,35 @@ def test_code_macro_is_converted_to_fenced_code_block():
     assert "systemctl restart nginx" in markdown
 
 
+def test_code_macro_cdata_content_is_preserved():
+    # Confluence's real API response always wraps a code macro's body in a
+    # CDATA section (unlike the plain-text fixture above) — CDATA is an
+    # XML-only construct that an HTML-mode parser silently drops entirely,
+    # which is exactly what happened here before this was parsed as XML.
+    html = (
+        '<ac:structured-macro ac:name="code">'
+        "<ac:plain-text-body><![CDATA[# Recovery steps\n\n1. Restart the pool\n2. Verify connections]]>"
+        "</ac:plain-text-body>"
+        "</ac:structured-macro>"
+    )
+    markdown = parse_confluence_storage(html)
+    assert "# Recovery steps" in markdown
+    assert "1. Restart the pool" in markdown
+    assert "2. Verify connections" in markdown
+
+
+def test_multiple_top_level_elements_are_all_preserved():
+    # A real page body is a fragment with many sibling top-level elements,
+    # not a single wrapping element — XML requires exactly one root, so
+    # without wrapping the fragment first, everything after the first
+    # top-level element (here, the second <p>) was silently dropped.
+    html = "<h1>Title</h1><p>First paragraph.</p><p>Second paragraph.</p>"
+    markdown = parse_confluence_storage(html)
+    assert "# Title" in markdown
+    assert "First paragraph." in markdown
+    assert "Second paragraph." in markdown
+
+
 def test_admonition_macro_is_converted():
     html = (
         '<ac:structured-macro ac:name="warning">'

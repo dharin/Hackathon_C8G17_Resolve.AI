@@ -23,14 +23,30 @@ def parse_confluence_storage(storage_html: str) -> str:
     Confluence content is untrusted evidence, never executable instructions:
     scripts and inline event handlers are stripped outright, and only a
     known-safe set of structural elements is converted.
-    """
-    soup = BeautifulSoup(storage_html, "lxml")
 
-    for script in soup.find_all(["script", "style"]):
+    Parsed as XML ("lxml-xml"), not HTML ("lxml") — storage format wraps
+    macro bodies (e.g. a code macro's plain-text-body) in CDATA sections,
+    which are an XML-only construct. BeautifulSoup's HTML parser has no
+    concept of CDATA and silently drops that content, so a code macro would
+    parse as an empty fenced block no matter what it actually contained.
+    XML mode also strips the (here, undeclared) `ac:`/`ri:` namespace
+    prefixes from tag and attribute names — every lookup below matches on
+    the unprefixed name for that reason.
+
+    The page body is a *fragment* — typically many sibling top-level
+    elements (paragraph after paragraph, headings, tables) — but XML
+    requires exactly one root element. Wrapped in a synthetic `<root>`
+    before parsing so nothing after the first top-level element gets
+    silently dropped by the parser.
+    """
+    soup = BeautifulSoup(f"<root>{storage_html}</root>", "lxml-xml")
+    root = soup.find("root")
+
+    for script in root.find_all(["script", "style"]):
         script.decompose()
 
-    for macro in soup.find_all("ac:structured-macro"):
-        name = macro.get("ac:name", "")
+    for macro in root.find_all("structured-macro"):
+        name = macro.get("name", "")
         if name in _NAVIGATIONAL_MACROS:
             macro.decompose()
             continue
@@ -39,7 +55,7 @@ def parse_confluence_storage(storage_html: str) -> str:
         elif name in _ADMONITION_MACROS:
             _replace_admonition_macro(macro, _ADMONITION_MACROS[name])
 
-    markdown = _node_to_markdown(soup)
+    markdown = _node_to_markdown(root)
     # Collapse runs of blank lines left behind by decomposed/converted nodes.
     lines = [line.rstrip() for line in markdown.splitlines()]
     collapsed: list[str] = []
@@ -51,13 +67,13 @@ def parse_confluence_storage(storage_html: str) -> str:
 
 
 def _replace_code_macro(macro: Tag) -> None:
-    body = macro.find("ac:plain-text-body")
+    body = macro.find("plain-text-body")
     code_text = body.get_text() if body else ""
     macro.replace_with(NavigableString(f"\n```\n{code_text}\n```\n"))
 
 
 def _replace_admonition_macro(macro: Tag, label: str) -> None:
-    body = macro.find("ac:rich-text-body")
+    body = macro.find("rich-text-body")
     text = body.get_text(" ", strip=True) if body else ""
     macro.replace_with(NavigableString(f"\n> **{label}:** {text}\n"))
 
