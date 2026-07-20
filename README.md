@@ -180,7 +180,7 @@ Creates the git-ignored `frontend/node_modules/` directory. `npm run dev` will a
 ### 3. Backend virtual environment
 
 ```
-cd backend
+ 
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -210,6 +210,14 @@ uvicorn main:app --reload --port 8000
 ```
 
 Backend runs at http://localhost:8000. Health check: `GET http://localhost:8000/health` → `{"status": "ok"}`.
+
+## Reload the Backend
+
+```
+cd backend
+source .venv/bin/activate
+uvicorn main:app --reload --port 8000
+```
 
 Authenticated identity check (requires a bearer token — a real Clerk session token, or any non-empty string when `AUTH_PROVIDER=mock`):
 
