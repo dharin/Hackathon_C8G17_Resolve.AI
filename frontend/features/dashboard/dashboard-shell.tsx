@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
-import { AlertCircle, MousePointerClick, UploadCloud } from "lucide-react";
+import { MousePointerClick } from "lucide-react";
 import {
   Empty,
   EmptyDescription,
@@ -11,14 +11,13 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { WorkflowStepper } from "@/components/workflow-stepper";
 import { IncidentList } from "@/components/incident-list";
 import { IncidentDetails } from "@/components/incident-details";
 import { computeWorkflowSteps } from "@/lib/workflow-steps";
 import {
+  clearPersistedAnalysisId,
   getPersistedAnalysisId,
   setPersistedAnalysisId,
 } from "@/lib/analysis-session";
@@ -40,6 +39,11 @@ export function DashboardShell() {
   // sessionStorage is only ever consulted client-side, in the effect below,
   // to avoid a hydration mismatch).
   const [analysisId, setAnalysisId] = useState<string | null>(urlAnalysisId);
+  // True once the sessionStorage restore below has actually run — until
+  // then, `!analysisId` doesn't yet mean "nothing to show", it might just
+  // mean restoration hasn't happened yet (see the redirect effect further
+  // down, which is gated on this).
+  const [resolved, setResolved] = useState(false);
 
   useEffect(() => {
     // Same documented "sync with an external system" pattern as the
@@ -49,6 +53,7 @@ export function DashboardShell() {
       setPersistedAnalysisId(urlAnalysisId);
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setAnalysisId(urlAnalysisId);
+      setResolved(true);
       return;
     }
     const persisted = getPersistedAnalysisId();
@@ -59,12 +64,12 @@ export function DashboardShell() {
     } else {
       setAnalysisId(null);
     }
+    setResolved(true);
   }, [urlAnalysisId, router]);
 
   const [incidents, setIncidents] = useState<LogIssue[] | null>(null);
   const [incidentsError, setIncidentsError] = useState<string | null>(null);
   const [loadingIncidents, setLoadingIncidents] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [detail, setDetail] = useState<IncidentDetail | null>(null);
@@ -108,7 +113,20 @@ export function DashboardShell() {
     return () => {
       cancelled = true;
     };
-  }, [analysisId, getToken, retryCount]);
+  }, [analysisId, getToken]);
+
+  useEffect(() => {
+    // Dashboard is locked behind having a *working* analysis — no inline
+    // "no analysis" / "couldn't load" states to click past. Once
+    // restoration has actually run (see `resolved` above) and there's
+    // still nothing usable — never uploaded, or a stale/expired analysis
+    // id that failed to load — send the user to upload a log instead.
+    if (!resolved) return;
+    if (analysisId && !incidentsError) return;
+
+    clearPersistedAnalysisId();
+    router.replace("/upload-logs");
+  }, [resolved, analysisId, incidentsError, router]);
 
   useEffect(() => {
     // Nothing to fetch — `selectedIncident` (derived below) is undefined
@@ -144,54 +162,15 @@ export function DashboardShell() {
     };
   }, [analysisId, selectedId, getToken]);
 
-  const retry = useCallback(() => setRetryCount((n) => n + 1), []);
-
   const handleTicketCreated = useCallback((ticket: JiraTicketReference) => {
     setDetail((prev) => (prev ? { ...prev, jira_ticket: ticket } : prev));
   }, []);
 
-  if (!analysisId) {
-    return (
-      <div className="flex flex-1 items-center justify-center p-4 sm:p-6">
-        <Empty className="max-w-md border border-dashed">
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <UploadCloud />
-            </EmptyMedia>
-            <EmptyTitle>No log analyzed yet</EmptyTitle>
-            <EmptyDescription>
-              Upload an application log to detect incidents and start an
-              analysis.
-            </EmptyDescription>
-          </EmptyHeader>
-          <Button
-            nativeButton={false}
-            render={<a href="/upload-logs" />}
-            className="mt-2 w-fit"
-          >
-            <UploadCloud data-icon="inline-start" />
-            Upload Logs
-          </Button>
-        </Empty>
-      </div>
-    );
-  }
-
-  if (incidentsError) {
-    return (
-      <div className="flex flex-1 items-center justify-center p-4 sm:p-6">
-        <div className="flex w-full max-w-md flex-col gap-3">
-          <Alert variant="destructive">
-            <AlertCircle />
-            <AlertTitle>Couldn&apos;t load incidents</AlertTitle>
-            <AlertDescription>{incidentsError}</AlertDescription>
-          </Alert>
-          <Button variant="outline" className="w-fit" onClick={retry}>
-            Try again
-          </Button>
-        </div>
-      </div>
-    );
+  // Either still resolving (brief, see `resolved` above), or the redirect
+  // effect above is on its way to /upload-logs — nothing valid to show
+  // either way, so render nothing rather than flash stale/wrong UI.
+  if (!resolved || !analysisId || incidentsError) {
+    return null;
   }
 
   if (loadingIncidents || incidents === null) {
