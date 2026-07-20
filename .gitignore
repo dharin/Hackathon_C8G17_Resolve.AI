@@ -75,6 +75,12 @@ chroma/
 uploads/
 analyses/
 
+# RAG sync bookkeeping tracks what's in the (gitignored) lancedb/ vector
+# store on THIS machine — committing it lets a new clone believe documents
+# are indexed when the actual vectors never came across.
+backend/data/rag_sync_state.sqlite3
+backend/data/rag_sync_meta.sqlite3
+
 # --- OS files ---
 .DS_Store
 Thumbs.db

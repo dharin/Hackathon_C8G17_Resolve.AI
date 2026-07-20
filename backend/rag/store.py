@@ -63,6 +63,14 @@ class ChunkStore:
     def count_rows(self) -> int:
         return self._table.count_rows()
 
+    def has_document(self, document_id: str) -> bool:
+        """Whether any chunks for this document actually exist in the
+        vector store — used to catch sync state claiming a document is
+        indexed when the store itself has no record of it (e.g. sync
+        state carried over to a machine with an empty local store).
+        """
+        return self._table.count_rows(f"document_id = '{_escape(document_id)}'") > 0
+
     def search(
         self,
         query_vector: list[float],

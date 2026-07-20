@@ -109,6 +109,25 @@ def test_removed_document_is_marked_unavailable_and_deleted_from_store(tmp_path:
     assert store.search(query_vector, limit=10) == []
 
 
+def test_sync_state_indexed_but_store_missing_document_reindexes(tmp_path: Path):
+    """Guards against sync state (e.g. carried over from another machine)
+    claiming a document is indexed while the local vector store has no
+    record of it — the store, not just the state DB, must back that claim.
+    """
+    coordinator, store, _ = make_coordinator(tmp_path)
+    doc = make_document("a", "# A\n\nContent A.")
+    coordinator.sync_source(FakeLoader([doc]))
+
+    store.delete_document("a")
+    assert store.count_rows() == 0
+
+    summary = coordinator.sync_source(FakeLoader([doc]))
+
+    assert summary.documents_indexed == 1
+    assert summary.documents_skipped_unchanged == 0
+    assert store.has_document("a")
+
+
 def test_failed_document_is_reported_without_aborting_sync(tmp_path: Path):
     coordinator, _, sync_state = make_coordinator(tmp_path)
     good = make_document("good", "# Good\n\nFine.")

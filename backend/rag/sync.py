@@ -48,6 +48,7 @@ class SyncCoordinator:
                     and existing.status == "indexed"
                     and existing.content_hash == document.content_hash
                     and existing.version == document.version
+                    and self._store.has_document(document.document_id)
                 )
                 if unchanged:
                     summary.documents_skipped_unchanged += 1
