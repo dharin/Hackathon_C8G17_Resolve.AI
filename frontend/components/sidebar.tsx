@@ -6,14 +6,9 @@ import { useState } from "react";
 import {
   LayoutDashboard,
   Upload,
-  BookOpen,
   SlidersHorizontal,
-  Plug,
-  ScrollText,
-  Settings,
   HelpCircle,
   Menu,
-  Activity,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -26,22 +21,16 @@ import {
 const NAV_ITEMS = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/upload-logs", label: "Upload Logs", icon: Upload },
-  { href: "/knowledge-base", label: "Knowledge Base", icon: BookOpen },
   { href: "/rag-configuration", label: "RAG Configuration", icon: SlidersHorizontal },
-  { href: "/integrations", label: "Integrations", icon: Plug },
-  { href: "/audit-logs", label: "Audit Logs", icon: ScrollText },
-  { href: "/settings", label: "Settings", icon: Settings },
   { href: "/help", label: "Help", icon: HelpCircle },
 ] as const;
 
 function Brand() {
   return (
     <div className="flex items-center gap-2 px-2 py-1.5">
-      <div className="flex size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-        <Activity className="size-4" />
-      </div>
+      <img src="/logo.png" alt="Resolve AI" className="size-8 rounded-lg" />
       <span className="text-sm font-semibold text-sidebar-foreground">
-        Incident Analysis
+        Resolve AI
       </span>
     </div>
   );

@@ -36,9 +36,9 @@ export function TopHeader() {
                 data-testid="username"
                 className="hidden text-muted-foreground sm:inline"
               >
-                {user?.username ??
+                {user?.fullName ??
+                  user?.username ??
                   user?.primaryEmailAddress?.emailAddress ??
-                  user?.fullName ??
                   "Signed in"}
               </span>
               <SignOutButton>
