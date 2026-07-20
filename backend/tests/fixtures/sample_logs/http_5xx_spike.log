@@ -1,0 +1,4 @@
+2026-07-19T09:00:00Z ERROR service=checkout-api response status=500 internal error
+2026-07-19T09:00:01Z ERROR service=checkout-api response status=500 internal error
+2026-07-19T09:00:02Z ERROR service=checkout-api response status=503 internal error
+2026-07-19T09:00:03Z ERROR service=checkout-api response status=503 internal error

@@ -1,0 +1,2 @@
+2026-07-19T08:09:14Z ERROR service=checkout-api postgres connection pool timeout after 5000ms
+2026-07-19T08:11:02Z FATAL service=checkout-api postgres connection pool exhausted: 100/100 connections in use

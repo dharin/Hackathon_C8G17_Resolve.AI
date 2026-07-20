@@ -49,6 +49,8 @@ build/
 # --- Logs ---
 logs/
 *.log
+# Test fixtures are real, checked-in sample logs, not runtime output.
+!backend/tests/fixtures/**/*.log
 
 # --- Agent / LLM run artifacts ---
 .claude/settings.local.json

@@ -1,0 +1,5 @@
+2026-07-19T11:00:00Z INFO service=payments-worker queue depth is 12 messages, nominal
+2026-07-19T11:00:05Z FATAL service=worker-jobs-1 Out of memory: Killed process 4821 (java)
+2026-07-19T11:00:10Z ERROR service=checkout-api postgres connection pool exhausted: 100/100 connections in use
+2026-07-19T11:00:15Z WARN service=auth-service authentication failed user=jdoe
+2026-07-19T11:00:20Z ERROR service=payments-webhook signature verification produced an unexpected mismatch

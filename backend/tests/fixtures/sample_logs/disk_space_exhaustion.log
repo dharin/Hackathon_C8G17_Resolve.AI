@@ -1,0 +1,2 @@
+2026-07-19T04:00:00Z ERROR service=worker-jobs-2 write failed: no space left on device
+2026-07-19T04:00:05Z WARN service=worker-jobs-2 disk usage at 96% full
