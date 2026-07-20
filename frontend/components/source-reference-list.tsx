@@ -2,9 +2,16 @@
 
 import { useState } from "react";
 import { useAuth } from "@clerk/nextjs";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { openLocalSopDocument } from "@/services/rag-service";
+import type { SourceType } from "@/types/incident";
 import type { RetrievedChunk } from "@/types/analysis";
+
+const SOURCE_LABEL: Record<SourceType, string> = {
+  confluence: "Confluence",
+  local_sop: "Local SOP",
+};
 
 export function SourceReferenceList({
   sources,
@@ -20,10 +27,11 @@ export function SourceReferenceList({
   }
 
   return (
-    <ul className="flex flex-col gap-1">
+    <ul className="flex flex-col gap-1.5">
       {sources.map((source) => (
-        <li key={source.chunk_id}>
+        <li key={source.chunk_id} className="flex flex-wrap items-center gap-2">
           <SourceLink source={source} />
+          <Badge variant="secondary">{SOURCE_LABEL[source.source_type]}</Badge>
         </li>
       ))}
     </ul>
